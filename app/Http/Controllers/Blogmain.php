@@ -30,7 +30,7 @@ class Blogmain extends Controller
                     'excerpt' => $post->excerpt,
                     'content' => $post->description,
                     'category' => $post->category,
-                    'thumbnail' => $post->thumbnail,
+                    'thumbnail' => json_decode($post->file_path, true),
                     'is_featured' => (bool)$post->is_featured,
                     'views' => $post->views_count,
                     'estimated_reading_time' => $post->estimated_reading_time,
@@ -53,7 +53,7 @@ class Blogmain extends Controller
                     'excerpt' => $post->excerpt,
                     'content' => $post->description,
                     'category' => $post->category,
-                    'thumbnail' => $post->file_path,
+                    'thumbnail' => json_decode($post->file_path, true),
                     'is_featured' => (bool)$post->is_featured,
                     'views' => $post->views_count,
                     'estimated_reading_time' => $post->estimated_reading_time,
@@ -75,7 +75,7 @@ class Blogmain extends Controller
                     'title' => $post->title,
                     'slug' => $post->slug,
                     'category' => $post->category,
-                    'thumbnail' => $post->thumbnail,
+                    'thumbnail' => json_decode($post->file_path, true),
                     'views' => $post->views_count,
                     'estimated_reading_time' => $post->estimated_reading_time,
                     'published_at' => $post->created_date ? $post->created_date->toDateTimeString() : null
@@ -105,7 +105,10 @@ class Blogmain extends Controller
         $categories = array_merge($defaultCategories, $categories);
 
         $categoriesList = array_keys($categories);
-
+        echo "<pre>";
+        print_r($posts);
+        echo "</pre>";
+        return;
         return view('pages.blogPage', [
             'featuredPosts' => $featuredPosts,
             'posts' => $posts,

@@ -50,7 +50,8 @@ class Admin extends Controller
                 'desc' => 'required',
                 'file' => 'required|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
                 'category' => 'nullable|string',
-                'tags' => 'nullable|string',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
                 'featured' => 'boolean'
             ]);
 

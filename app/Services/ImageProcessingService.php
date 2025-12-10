@@ -80,6 +80,7 @@ class ImageProcessingService
         $img->writeImage($outPath);
 
         $img->clear();
+        $this->deleteTempFile($path);
 
         return $outPath;
     }
@@ -189,5 +190,12 @@ class ImageProcessingService
         Storage::disk('public')->put($storagePath, file_get_contents($filePath));
 
         return $storagePath;
+    }
+
+    private function deleteTempFile(string $filePath): void
+    {
+        if (file_exists($filePath) && str_starts_with($filePath, $this->tempFolder)) {
+            @unlink($filePath);
+        }
     }
 }

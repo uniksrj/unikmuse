@@ -23,7 +23,8 @@ class newpost_details extends Model
         'comments_count',
         'category',
         'file_path',
-        'active'
+        'active',
+        'tags',
     ];
 
     protected $casts = [

@@ -58,11 +58,10 @@
             <h2 class="section-title">Featured Articles</h2>
             <p class="section-subtitle">Handpicked stories that are currently trending, most loved, or carry meaningful
                 insights.</p>
-
             <div class="featured-grid">
                 @foreach ($featuredPosts as $post)
                     <article class="featured-card" itemscope itemtype="https://schema.org/BlogPosting">
-                        <img src="{{ asset($post['thumbnail']) }}" alt="{{ $post['title'] }}" class="featured-img"
+                        <img src="{{ asset('storage/' .$post['thumbnail']['original']['webp']) }}" alt="{{ $post['title'] }}" class="featured-img"
                             itemprop="image">
                         <div class="featured-content">
                             <span class="featured-category">{{ $post['category'] }}</span>
@@ -115,12 +114,8 @@
 
                     <div class="blog-grid">
                         @foreach ($posts as $post)
-                            <article class="blog-card" itemscope itemtype="https://schema.org/BlogPosting">
-                                @php
-                                    $imagepath = json_decode($post['thumbnail'], true);
-                                    $img = !empty($imagepath) ? $imagepath[0] : 'uploads/no_image.jpg';
-                                @endphp
-                                <img src="{{ asset('storage/' . $img) }}" alt="{{ $post['title'] }}"
+                            <article class="blog-card" itemscope itemtype="https://schema.org/BlogPosting">                                
+                                <img src="{{ asset('storage/' . $post['thumbnail']['original']['webp']) }}" alt="{{ $post['title'] }}"
                                     class="blog-img" itemprop="image">
                                 <div class="blog-content">
                                     <div class="blog-meta">
@@ -204,7 +199,7 @@
                     <h3 class="sidebar-title">Most Popular</h3>
                     @foreach ($popularPosts as $popular)
                         <div class="popular-post">
-                            <img src="{{ asset($popular['thumbnail']) }}" alt="{{ $popular['title'] }}"
+                            <img src="{{ asset('storage/' . $popular['thumbnail']['original']['webp']) }}" alt="{{ $popular['title'] }}"
                                 class="popular-img">
                             <div>
                                 <h4 class="popular-title">
