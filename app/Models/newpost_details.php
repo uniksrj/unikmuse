@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 
 class newpost_details extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'name',
         'title',

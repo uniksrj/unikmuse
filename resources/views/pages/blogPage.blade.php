@@ -96,7 +96,7 @@
                     onclick="window.location='{{ route('blog.index') }}'">
                     All Categories
                 </button>
-                @foreach ($categories as $catName => $count)
+                @foreach ($categoriesList as $catName => $count)
                     <button class="category-btn {{ $category == $catName ? 'active' : '' }}"
                         onclick="window.location='{{ route('blog.index', ['category' => $catName]) }}'">
                         {{ $catName }}
@@ -145,8 +145,8 @@
                     </div>
 
                     <!-- Pagination -->
-                    {{-- <div class="pagination">
-                        @if ($posts->onFirstPage())
+                    <div class="pagination">
+                        {{-- @if ($posts->onFirstPage())
                             <span class="disabled">◀ Previous</span>
                         @else
                             <a href="{{ $posts->previousPageUrl() }}">◀ Previous</a>
@@ -164,8 +164,8 @@
                             <a href="{{ $posts->nextPageUrl() }}">Next ▶</a>
                         @else
                             <span class="disabled">Next ▶</span>
-                        @endif
-                    </div> --}}
+                        @endif --}}
+                    </div>
                 </section>
             </main>
 
@@ -174,7 +174,7 @@
                 <div class="sidebar-section">
                     <h3 class="sidebar-title">Categories</h3>
                     <ul class="category-list">
-                        @foreach ($categories as $catName => $count)
+                        @foreach ($categoriesList as $catName => $count)
                             <li>
                                 <a href="{{ route('blog.index', ['category' => $catName]) }}">
                                     {{ $catName }}

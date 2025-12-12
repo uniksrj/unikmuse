@@ -207,9 +207,9 @@ $(document).ready(function () {
         var count = $(this).val().length;
         $('#titleCount').text(count);
 
-        if (count > 50) {
-            $(this).val($(this).val().substring(0, 50));
-            $('#titleCount').text(50);
+        if (count > 200) {
+            $(this).val($(this).val().substring(0, 200));
+            $('#titleCount').text(200);
             showAlert('error', 'Title cannot exceed 50 characters');
         }
     });

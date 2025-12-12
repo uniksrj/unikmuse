@@ -66,11 +66,11 @@
                             </label>
                         </div>
                         <div style="flex: 1; max-width: 600px;">
-                            <input class="form-control" name="title" type="text" maxlength="50"
+                            <input class="form-control" name="title" type="text" maxlength="200"
                                 placeholder="Enter a compelling title for your post..." aria-label="Post title"
                                 id="postTitle">
                             <div class="character-count">
-                                <span id="titleCount">0</span>/50 characters
+                                <span id="titleCount">0</span>/200 characters
                             </div>
                         </div>
                     </div>

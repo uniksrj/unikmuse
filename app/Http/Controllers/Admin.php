@@ -52,7 +52,11 @@ class Admin extends Controller
                 'category' => 'nullable|string',
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
-                'featured' => 'boolean'
+                'featured' => 'boolean',
+                'meta_title' => 'nullable|string|max:255',
+                'meta_description' => 'nullable|string|max:500',
+                'slug' => 'nullable|string|max:255|unique:newpost_details,slug',
+
             ]);
 
             $data = [
@@ -60,7 +64,12 @@ class Admin extends Controller
                 'description' => $validated['desc'],
                 'created_date' => now(),
                 'category' => $validated['category'] ?? null,
+                'slug' => $validated['slug'] ?? null,
+                'meta_title' => $validated['meta_title'] ?? null,
+                'tags' => json_encode($validated['tags']) ?? null,
+                'meta_description' => $validated['meta_description'] ?? null,
                 'active' => 1,
+                'is_featured' => $validated['featured'] ?? 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -123,9 +132,13 @@ class Admin extends Controller
 
     public function view_editPage($id)
     {
-        $user = DB::table('newpost_details')->where('id', $id)->firstOrFail();
+        $post = DB::table('newpost_details')->where('id', $id)->firstOrFail();
+        // echo "<pre>";
+        // print_r($user);
+        // echo "</pre>";
+        // return ;
         // $item = DB::findOrFail($id);
-        return view('admin.editpage', compact('user'));
+        return view('admin.editpage', compact('post'));
     }
 
     public function update_data(Request $request, $id)
@@ -136,22 +149,33 @@ class Admin extends Controller
                 'desc' => 'required',
                 'file' => 'required|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
                 'category' => 'nullable|string',
-                'meta_keywords' => 'nullable|string',
-                'is_featured' => 'boolean'
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
+                'featured' => 'boolean',
+                'meta_title' => 'nullable|string|max:255',
+                'meta_description' => 'nullable|string|max:500',
+                'slug' => 'nullable|string|max:255|unique:newpost_details,slug',
+
             ]);
 
             $data = [
                 'title' => $validated['title'],
                 'description' => $validated['desc'],
                 'category' => $validated['category'] ?? null,
+                'slug' => $validated['slug'] ?? null,
+                'meta_title' => $validated['meta_title'] ?? null,
+                'tags' => json_encode($validated['tags']) ?? null,
+                'meta_description' => $validated['meta_description'] ?? null,
+                'is_featured' => $validated['featured'] ?? 0,
                 'updated_at' => now(),
             ];
             $post = DB::table('newpost_details')
                 ->select('file_path')
                 ->where('id', $id)
-                ->first();
+                ->first();            
 
             if ($request->hasFile('file')) {
+
                 $file = $request->file('file');
 
                 if (!$file->isValid()) {
@@ -161,9 +185,18 @@ class Admin extends Controller
                     ], 422);
                 }
 
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('uploads', $fileName, 'public');
-                $data['file_path'] = json_encode([$filePath]);
+                $processed = $this->imgService->processImage($file->getPathname(), [
+                    'quality' => 80,
+                    'formats' => ['jpeg', 'webp'],
+                    'sizes' => ['thumb', 'medium', 'large', 'original']
+                ]);
+                $storagePaths = [];
+                foreach ($processed as $size => $formats) {
+                    foreach ($formats as $format => $path) {
+                        $storagePaths[$size][$format] = $this->imgService->saveToStorage($path, 'uploads');
+                    }
+                }
+                $data['file_path'] = json_encode($storagePaths);
             } else {
                 if (!empty($post->file_path)) {
                     $data['file_path'] = json_encode([$post->file_path]);
@@ -171,29 +204,6 @@ class Admin extends Controller
                     $data['file_path'] = null;
                 }
             }
-
-            // if ($request->hasFile('file')) {
-            //     $filePaths = [];
-            //     foreach ($request->file('file') as $file) {
-            //         $fileName = time() . '_' . $file->getClientOriginalName();
-            //         $filePath = $file->storeAs('uploads', $fileName, 'public');
-            //         $filePaths[] = $filePath;
-            //     }
-
-            //     if (!empty($filePaths)) {
-            //         if (!empty($post->file_path)) {
-            //             $decode_arr = json_decode($post->file_path);
-            //             $merged_arr = array_merge($decode_arr, $filePaths);
-            //             $data['file_path'] = json_encode($merged_arr);
-            //         } else {
-            //             $data['file_path'] = json_encode($filePaths);
-            //         }
-            //     } else {
-            //         $data['file_path'] = null;
-            //     }
-            // } else {
-            //     $data['file_path'] = null;
-            // }
 
             $affected = DB::table('newpost_details')
                 ->where('id', $id)

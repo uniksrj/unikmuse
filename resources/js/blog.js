@@ -83,12 +83,11 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '#dropdown-cat', function (e) {
-        alert("clicked");
         console.log(window.innerWidth);
-    if (window.innerWidth <= 768) {   
-        e.preventDefault();
-        $(this).next('.dropdown-menu_category').slideToggle(300);
-        $(this).toggleClass("show");
-    }
-});
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+            $(this).next('.dropdown-menu_category').slideToggle(300);
+            $(this).toggleClass("show");
+        }
+    });
 });

@@ -102,13 +102,16 @@ class Blogmain extends Controller
             'Creativity & Inspiration' => 0
         ];
 
-        $categories = array_merge($defaultCategories, $categories);
+        $categoriesList = [];
 
-        $categoriesList = array_keys($categories);
-        echo "<pre>";
-        print_r($posts);
-        echo "</pre>";
-        return;
+        foreach ($defaultCategories as $label => $defaultCount) {
+            $lowerKey = strtolower($label);
+            $lowerKey = str_replace('&', '', $lowerKey);
+            $lowerKey = trim($lowerKey);
+            $lowerKey = str_replace(' ', '-', $lowerKey);
+            $categoriesList[$label] = $categories[$lowerKey] ?? 0;
+        }
+
         return view('pages.blogPage', [
             'featuredPosts' => $featuredPosts,
             'posts' => $posts,

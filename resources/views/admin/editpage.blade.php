@@ -313,7 +313,7 @@
                 <i class="fas fa-edit me-2"></i>Update Post Details
             </h4>
 
-            <form data-id="{{ $user->id }}" enctype="multipart/form-data" id="editForm">
+            <form data-id="{{ $post->id }}" enctype="multipart/form-data" id="editForm">
                 @csrf
                 @method('PUT')
 
@@ -327,10 +327,10 @@
                         </div>
                         <div style="flex: 1; max-width: 600px;">
                             <input class="form-control" name="title" type="text" maxlength="50"
-                                placeholder="Enter a compelling title for your post..." value="{{ $user->title }}"
+                                placeholder="Enter a compelling title for your post..." value="{{ $post->title }}"
                                 aria-label="Post title" id="postTitle">
                             <div class="character-count">
-                                <span id="titleCount">{{ strlen($user->title) }}</span>/50 characters
+                                <span id="titleCount">{{ strlen($post->title) }}</span>/50 characters
                             </div>
                         </div>
                     </div>
@@ -347,8 +347,9 @@
                         <div style="flex: 1; max-width: 600px;">
                             <div class="slug-field">
                                 <span class="slug-prefix">/</span>
-                                <input class="form-control slug-input" name="slug" value="{{ $user->slug }}" type="text" maxlength="100"
-                                    placeholder="url-friendly-slug" aria-label="Post slug" id="postSlug">
+                                <input class="form-control slug-input" name="slug" value="{{ $post->slug }}"
+                                    type="text" maxlength="100" placeholder="url-friendly-slug"
+                                    aria-label="Post slug" id="postSlug">
                                 <button type="button" class="slug-generate" id="generateSlugBtn">
                                     Generate
                                 </button>
@@ -370,9 +371,9 @@
                         </div>
                         <div style="flex: 1; max-width: 600px;">
                             <textarea class="form-control" name="desc" id="description" rows="6"
-                                placeholder="Write your post content here...">{{ $user->description }}</textarea>
+                                placeholder="Write your post content here...">{{ $post->description }}</textarea>
                             <div class="character-count">
-                                <span id="descCount">{{ strlen($user->description) }}</span> characters
+                                <span id="descCount">{{ strlen($post->description) }}</span> characters
                             </div>
                         </div>
                     </div>
@@ -410,23 +411,33 @@
                                     <small class="text-muted">(Click × to remove)</small>
                                 </h6>
                                 <div class="image-preview" id="currentImages">
-                                    {{-- @php
-                                        $imagepath = json_decode($user->file_path);
+                                    @php
+                                        $imagepaths = json_decode($post->file_path);
                                     @endphp
-                                    @if (!empty($imagepath))
-                                        @foreach ($imagepath as $index => $image)
+
+                                    @if (!empty($imagepaths))
+                                        @if (is_array($imagepaths))
+                                            @foreach ($imagepaths as $index => $imagepath)
+                                                <div class="image-item">
+                                                    <img src="{{ asset('storage/' . $imagepath->thumb->webp) }}"
+                                                        alt="Current Image {{ $index + 1 }}">
+                                                    <button type="button" class="image-remove"
+                                                        onclick="removeImage(this, '{{ $imagepath->thumb->webp }}')">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            @endforeach
+                                        @else
                                             <div class="image-item">
-                                                <img src="{{ asset('storage/' . $image) }}" alt="Current Image {{ $index + 1 }}">
-                                                <button type="button" class="image-remove" onclick="removeImage(this, '{{ $image }}')">
+                                                <img src="{{ asset('storage/' . $imagepaths->thumb->webp) }}"
+                                                    alt="Current Image">
+                                                <button type="button" class="image-remove"
+                                                    onclick="removeImage(this, '{{ $imagepaths->thumb->webp }}')">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </div>
-                                        @endforeach
-                                    @else
-                                        <div class="image-item">
-                                            <img src="{{ asset('storage/uploads/no_image.jpg') }}" alt="No Image">
-                                        </div>
-                                    @endif --}}
+                                        @endif
+                                    @endif
                                 </div>
                                 <input type="hidden" name="removed_images" id="removedImages" value="">
                             </div>
@@ -526,7 +537,9 @@
                                         <select class="form-control" name="category" id="categorySelect">
                                             <option value="">Select Category</option>
                                             @foreach ($categories as $key => $value)
-                                                <option value="{{ $key }}">{{ $value }}</option>
+                                                <option value="{{ $key }}"
+                                                    {{ $post->category == $key ? 'selected' : '' }}>
+                                                    {{ $value }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -550,7 +563,8 @@
                                     <div class="mb-3">
                                         <label class="form-label">Meta Title</label>
                                         <input type="text" class="form-control" name="meta_title"
-                                            placeholder="SEO meta title" maxlength="60">
+                                            placeholder="SEO meta title" maxlength="60"
+                                            value="{{ $post->meta_title }}">
                                         <div class="character-count">
                                             <span id="metaTitleCount">0</span>/60 characters
                                         </div>
@@ -560,7 +574,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">Meta Description</label>
                                         <textarea class="form-control" name="meta_description" rows="2" placeholder="SEO meta description"
-                                            maxlength="160"></textarea>
+                                            maxlength="160">{{ $post->meta_description }}</textarea>
                                         <div class="character-count">
                                             <span id="metaDescCount">0</span>/160 characters
                                         </div>
@@ -569,8 +583,8 @@
                             </div>
 
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="featuredPost" name="featured"
-                                    value="1">
+                                <input class="form-check-input" type="checkbox" id="featuredPost"
+                                    {{ $post->is_featured ? 'checked' : '' }} name="featured" value="1">
                                 <label class="form-check-label" for="featuredPost">
                                     Mark as featured post
                                 </label>
