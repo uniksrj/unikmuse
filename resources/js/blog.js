@@ -35,21 +35,13 @@ $(document).ready(function () {
         const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove('loading-skeleton');
-                    imageObserver.unobserve(img);
-                }
+                const img = entry.target;
+                img.classList.add('loaded');
+                imageObserver.unobserve(img);
+            }
             });
         });
-
-        images.forEach(img => {
-            img.dataset.src = img.src;
-            img.src =
-                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+';
-            img.classList.add('loading-skeleton');
-            imageObserver.observe(img);
-        });
+        images.forEach(img => imageObserver.observe(img));
     }
 
     setInterval(() => {

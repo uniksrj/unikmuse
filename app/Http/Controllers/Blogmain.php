@@ -246,33 +246,38 @@ class Blogmain extends Controller
     }
 
     /**
-     * Show blog homepage with all posts
-     */
-    // public function index()
-    // {
-    //     $posts = Post::published()
-    //         ->recent()
-    //         ->paginate(10);
-
-    //     $categories = Post::published()
-    //         ->select('category', DB::raw('COUNT(*) as count'))
-    //         ->whereNotNull('category')
-    //         ->groupBy('category')
-    //         ->get();
-
-    //     return view('blog.index', compact('posts', 'categories'));
-    // }
-
-    /**
      * Show posts by category
      */
     public function byCategory($category)
     {
+        
+        $defaultCategories = [
+            'technology' => 'Technology',
+            'travel' => 'Travel',
+            'life-style' => 'Lifestyle',
+            'digital-trends' => 'Digital Trends',
+            'productivity' => 'Productivity',
+            'tutorials' => 'Tutorials',
+            'news-updates' => 'News & Updates',
+            'stories-experiences' => 'Stories & Experiences',
+            'creativity-inspiration' => 'Creativity & Inspiration'
+        ];
+
+        if (!isset($defaultCategories[$category])) {
+            abort(404);
+        }
+        
+        $displayName = $defaultCategories[$category];
+        // $category = $defaultCategories[$category];
         $posts = newpost_details::published()
             ->where('category', $category)
             ->recent()
             ->paginate(10);
 
-        return view('blog.category', compact('posts', 'category'));
+        return view('categories.showPage', [
+        'posts' => $posts,
+        'categoryName' => $displayName, 
+        'categorySlug' => $category 
+    ]);
     }
 }

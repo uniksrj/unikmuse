@@ -36,49 +36,63 @@
     <title>Unik Muse Blog – Insights, Stories, Trends & Expert Opinions</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/blog.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/readmore.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/blogpage.css') }}">
-
 </head>
 
-<body>
+<body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
-    <section class="hero">
-        <div class="container">
-            <h1>Explore Ideas That Inspire and Inform</h1>
-            <p>At Unik Muse, we curate stories, guides, tutorials, and insights across technology, travel, culture,
-                creativity, and modern digital life. Stay updated and discover new perspectives every day.</p>
+    
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-16 md:py-24">
+        <div class="container-unik text-center">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 font-serif">
+                Explore Ideas That Inspire and Inform
+            </h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto opacity-90">
+                At Unik Muse, we curate stories, guides, tutorials, and insights across technology, travel, culture,
+                creativity, and modern digital life. Stay updated and discover new perspectives every day.
+            </p>
         </div>
     </section>
 
-    <div class="container">
+    <div class="container-unik py-8 md:py-12">
         <!-- Featured Posts -->
-        <section class="section">
-            <h2 class="section-title">Featured Articles</h2>
-            <p class="section-subtitle">Handpicked stories that are currently trending, most loved, or carry meaningful
-                insights.</p>
-            <div class="featured-grid">
+        <section class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-unik-primary mb-3 font-serif">
+                    Featured Articles
+                </h2>
+                <p class="text-unik-muted text-lg max-w-2xl mx-auto">
+                    Handpicked stories that are currently trending, most loved, or carry meaningful insights.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 @foreach ($featuredPosts as $post)
-                    <article class="featured-card" itemscope itemtype="https://schema.org/BlogPosting">
-                        <img src="{{ asset('storage/' .$post['thumbnail']['original']['webp']) }}" alt="{{ $post['title'] }}" class="featured-img"
-                            itemprop="image">
-                        <div class="featured-content">
-                            <span class="featured-category">{{ $post['category'] }}</span>
-                            <h3 class="featured-title" itemprop="headline">
+                    <article class="bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1" 
+                             itemscope itemtype="https://schema.org/BlogPosting">
+                        <div class="overflow-hidden rounded-t-unik-lg">
+                            <img src="{{ asset('storage/' . $post['thumbnail']['original']['webp']) }}" 
+                                 alt="{{ $post['title'] }}" 
+                                 class="w-full h-48 md:h-56 object-cover hover:scale-105 transition-transform duration-300"
+                                 itemprop="image">
+                        </div>
+                        <div class="p-6">
+                            <span class="inline-block bg-unik-primary text-white px-3 py-1 rounded-full text-sm font-medium mb-3">
+                                {{ $post['category'] }}
+                            </span>
+                            <h3 class="text-lg md:text-xl font-semibold text-unik-dark mb-3 line-clamp-2" itemprop="headline">
                                 {{ $post['title'] }}
                             </h3>
-                            <p class="featured-excerpt" itemprop="description">
+                            <p class="text-unik-muted mb-4 text-sm md:text-base line-clamp-3" itemprop="description">
                                 {{ Str::limit($post['excerpt'], 120) }}
                             </p>
-                            <a href="#" class="read-more" itemprop="mainEntityOfPage">
-                                Read More <i class="fas fa-arrow-right"></i>
+                            <a href="#" class="block px-5 py-2 bg-unik-primary items-center  color-unik-primary font-medium hover:color-unik-secondary transition-colors text-sm"
+                               itemprop="mainEntityOfPage">
+                                Read More <i class="fas fa-arrow-right ml-2"></i>
                             </a>
                         </div>
-                        <meta itemprop="datePublished"
-                            content="{{ Carbon::parse($post['published_at'])->toIso8601String() }}">
-                        <meta itemprop="dateModified"
-                            content="{{ Carbon::parse($post['updated_at'])->toIso8601String() }}">
+                        <meta itemprop="datePublished" content="{{ Carbon::parse($post['published_at'])->toIso8601String() }}">
+                        <meta itemprop="dateModified" content="{{ Carbon::parse($post['updated_at'])->toIso8601String() }}">
                         <meta itemprop="author" content="Unik Muse">
                         <meta itemprop="publisher" content="Unik Muse">
                     </article>
@@ -87,98 +101,120 @@
         </section>
 
         <!-- Category Filters -->
-        <section class="section">
-            <h2 class="section-title">Browse by Category</h2>
-            <p class="section-subtitle">Explore posts based on your interests</p>
+        <section class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-unik-primary mb-3 font-serif">
+                    Browse by Category
+                </h2>
+                <p class="text-unik-muted text-lg max-w-2xl mx-auto">
+                    Explore posts based on your interests
+                </p>
+            </div>
 
-            <div class="category-filters">
-                <button class="category-btn {{ !$category ? 'active' : '' }}"
-                    onclick="window.location='{{ route('blog.index') }}'">
+            <div class="flex flex-wrap justify-center gap-3 md:gap-4">
+                <button class="px-5 py-2.5 rounded-full border border-unik-border hover:border-unik-primary hover:text-unik-primary transition-colors {{ !$category ? 'bg-unik-primary text-white border-unik-primary hover:text-white hover:bg-unik-primary/90' : 'bg-white text-unik-dark' }}"
+                        onclick="window.location='{{ route('blog.index') }}'">
                     All Categories
                 </button>
                 @foreach ($categoriesList as $catName => $count)
-                    <button class="category-btn {{ $category == $catName ? 'active' : '' }}"
-                        onclick="window.location='{{ route('blog.index', ['category' => $catName]) }}'">
+                    <button class="px-5 py-2.5 rounded-full border border-unik-border hover:border-unik-primary hover:text-unik-primary transition-colors {{ $category == $catName ? 'bg-unik-primary text-white border-unik-primary hover:text-white hover:bg-unik-primary/90' : 'bg-white text-unik-dark' }}"
+                            onclick="window.location='{{ route('blog.index', ['category' => $catName]) }}'">
                         {{ $catName }}
                     </button>
                 @endforeach
             </div>
         </section>
 
-        <div class="main-layout">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Main Content -->
-            <main>
-                <section class="section">
-                    <h2 class="section-title">Latest Posts</h2>
-                    <p class="section-subtitle">Browse the newest articles across all categories</p>
+            <main class="lg:col-span-2">
+                <section>
+                    <div class="text-center mb-12">
+                        <h2 class="text-2xl md:text-3xl font-bold text-unik-primary mb-3 font-serif">
+                            Latest Posts
+                        </h2>
+                        <p class="text-unik-muted text-lg">
+                            Browse the newest articles across all categories
+                        </p>
+                    </div>
 
-                    <div class="blog-grid">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                         @foreach ($posts as $post)
-                            <article class="blog-card" itemscope itemtype="https://schema.org/BlogPosting">                                
-                                <img src="{{ asset('storage/' . $post['thumbnail']['original']['webp']) }}" alt="{{ $post['title'] }}"
-                                    class="blog-img" itemprop="image">
-                                <div class="blog-content">
-                                    <div class="blog-meta">
-                                        <span class="blog-category">{{ $post['category'] }}</span>
-                                        <span>{{ $post['estimated_reading_time'] }} min read</span>
+                            <article class="bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1" 
+                                     itemscope itemtype="https://schema.org/BlogPosting">
+                                <div class="overflow-hidden rounded-t-unik-lg">
+                                    <img src="{{ asset('storage/' . $post['thumbnail']['original']['webp']) }}" 
+                                         alt="{{ $post['title'] }}" 
+                                         class="w-full h-48 md:h-56 object-cover hover:scale-105 transition-transform duration-300"
+                                         itemprop="image">
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <span class="bg-unik-primary/10 text-unik-primary px-3 py-1 rounded-full text-xs font-medium">
+                                            {{ $post['category'] }}
+                                        </span>
+                                        <span class="text-unik-muted text-sm">
+                                            {{ $post['estimated_reading_time'] }} min read
+                                        </span>
                                     </div>
-                                    <h3 class="blog-title" itemprop="headline">
+                                    <h3 class="text-lg md:text-xl font-semibold text-unik-dark mb-3 line-clamp-2" itemprop="headline">
                                         {{ $post['title'] }}
                                     </h3>
-                                    <p class="blog-excerpt" itemprop="description">
+                                    <p class="text-unik-muted mb-6 text-sm md:text-base line-clamp-3" itemprop="description">
                                         {{ Str::limit($post['excerpt'], 150) }}
                                     </p>
-                                    <div class="blog-meta">
-                                        <span itemprop="datePublished">
+                                    <div class="flex justify-between items-center pt-4 border-t border-unik-border">
+                                        <span class="text-unik-muted text-sm" itemprop="datePublished">
                                             {{ Carbon::parse($post['published_at'])->format('M d, Y') }}
                                         </span>
-                                        <a href="#" class="read-more">
-                                            Read More <i class="fas fa-arrow-right"></i>
+                                        <a href="#" class="inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm">
+                                            Read More <i class="fas fa-arrow-right ml-2"></i>
                                         </a>
                                     </div>
                                 </div>
-                                <meta itemprop="dateModified"
-                                    content="{{ Carbon::parse($post['updated_at'])->toIso8601String() }}">
+                                <meta itemprop="dateModified" content="{{ Carbon::parse($post['updated_at'])->toIso8601String() }}">
                                 <meta itemprop="author" content="Unik Muse">
                             </article>
                         @endforeach
                     </div>
 
                     <!-- Pagination -->
-                    <div class="pagination">
+                    <div class="flex justify-center items-center gap-2 mt-12">
                         {{-- @if ($posts->onFirstPage())
-                            <span class="disabled">◀ Previous</span>
+                            <span class="px-4 py-2 rounded-unik-md border border-unik-border text-unik-muted cursor-not-allowed">◀ Previous</span>
                         @else
-                            <a href="{{ $posts->previousPageUrl() }}">◀ Previous</a>
+                            <a href="{{ $posts->previousPageUrl() }}" class="px-4 py-2 rounded-unik-md border border-unik-border text-unik-primary hover:border-unik-primary hover:bg-unik-primary/5 transition-colors">◀ Previous</a>
                         @endif
 
                         @foreach (range(1, $posts->lastPage()) as $page)
                             @if ($page == $posts->currentPage())
-                                <span class="active">{{ $page }}</span>
+                                <span class="px-4 py-2 rounded-unik-md bg-unik-primary text-white border border-unik-primary">{{ $page }}</span>
                             @else
-                                <a href="{{ $posts->url($page) }}">{{ $page }}</a>
+                                <a href="{{ $posts->url($page) }}" class="px-4 py-2 rounded-unik-md border border-unik-border text-unik-primary hover:border-unik-primary hover:bg-unik-primary/5 transition-colors">{{ $page }}</a>
                             @endif
                         @endforeach
 
                         @if ($posts->hasMorePages())
-                            <a href="{{ $posts->nextPageUrl() }}">Next ▶</a>
+                            <a href="{{ $posts->nextPageUrl() }}" class="px-4 py-2 rounded-unik-md border border-unik-border text-unik-primary hover:border-unik-primary hover:bg-unik-primary/5 transition-colors">Next ▶</a>
                         @else
-                            <span class="disabled">Next ▶</span>
+                            <span class="px-4 py-2 rounded-unik-md border border-unik-border text-unik-muted cursor-not-allowed">Next ▶</span>
                         @endif --}}
                     </div>
                 </section>
             </main>
 
-            <aside class="sidebar">
+            <!-- Sidebar -->
+            <aside class="lg:col-span-1 space-y-8">
                 <!-- Categories -->
-                <div class="sidebar-section">
-                    <h3 class="sidebar-title">Categories</h3>
-                    <ul class="category-list">
+                <div class="bg-white rounded-unik-lg shadow-unik-sm p-6 border border-unik-border">
+                    <h3 class="text-xl font-semibold text-unik-dark mb-4 font-serif">Categories</h3>
+                    <ul class="space-y-2">
                         @foreach ($categoriesList as $catName => $count)
                             <li>
-                                <a href="{{ route('blog.index', ['category' => $catName]) }}">
-                                    {{ $catName }}
-                                    <span class="category-count">{{ $count }}</span>
+                                <a href="{{ route('blog.index', ['category' => $catName]) }}" 
+                                   class="flex px-5 py-2 bg-unik-primary justify-between items-center p-3 rounded-unik-md hover:bg-[#5f6397] text-unik-primary transition-colors group">
+                                    <span class="font-medium">{{ $catName }}</span>
+                                    <span class="bg-unik-light text-unik-dark text-xs px-2 py-1 rounded-full">{{ $count }}</span>
                                 </a>
                             </li>
                         @endforeach
@@ -186,56 +222,64 @@
                 </div>
 
                 <!-- Search -->
-                <div class="sidebar-section">
-                    <h3 class="sidebar-title">Search Articles</h3>
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search for articles...">
+                <div class="bg-white rounded-unik-lg shadow-unik-sm p-6 border border-unik-border">
+                    <h3 class="text-xl font-semibold text-unik-dark mb-4 font-serif">Search Articles</h3>
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-unik-muted"></i>
+                        <input type="text" 
+                               placeholder="Search for articles..." 
+                               class="w-full pl-12 pr-4 py-3 border border-unik-border rounded-unik-md focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent transition-colors">
                     </div>
                 </div>
 
                 <!-- Popular Posts -->
-                <div class="sidebar-section">
-                    <h3 class="sidebar-title">Most Popular</h3>
-                    @foreach ($popularPosts as $popular)
-                        <div class="popular-post">
-                            <img src="{{ asset('storage/' . $popular['thumbnail']['original']['webp']) }}" alt="{{ $popular['title'] }}"
-                                class="popular-img">
-                            <div>
-                                <h4 class="popular-title">
-                                    {{ Str::limit($popular['title'], 50) }}
-                                </h4>
-                                <div class="popular-meta">
-                                    {{ $popular['category'] }} • {{ $popular['estimated_reading_time'] }} min read
+                <div class="bg-white rounded-unik-lg shadow-unik-sm p-6 border border-unik-border">
+                    <h3 class="text-xl font-semibold text-unik-dark mb-4 font-serif">Most Popular</h3>
+                    <div class="space-y-4">
+                        @foreach ($popularPosts as $popular)
+                            <div class="flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-primary/5 transition-colors group">
+                                <img src="{{ asset('storage/' . $popular['thumbnail']['original']['webp']) }}" 
+                                     alt="{{ $popular['title'] }}" 
+                                     class="w-16 h-16 object-cover rounded-unik-md flex-shrink-0">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-medium text-unik-dark text-sm mb-1 line-clamp-2 group-hover:text-unik-primary transition-colors">
+                                        {{ Str::limit($popular['title'], 50) }}
+                                    </h4>
+                                    <div class="text-unik-muted text-xs">
+                                        {{ $popular['category'] }} • {{ $popular['estimated_reading_time'] }} min read
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
 
                 <!-- Newsletter -->
-                <div class="sidebar-section">
-                    <div class="newsletter-box">
-                        <h3 class="newsletter-title">Subscribe to Our Newsletter</h3>
-                        <p class="newsletter-text">Get the latest insights delivered to your inbox</p>
-                        <form id="newsletter-form">
-                            <input type="email" class="newsletter-input" placeholder="Your email address" required>
-                            <button type="submit" class="newsletter-btn">Subscribe</button>
-                        </form>
-                    </div>
+                <div class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent rounded-unik-lg p-6 text-white">
+                    <h3 class="text-xl font-semibold mb-3 font-serif">Subscribe to Our Newsletter</h3>
+                    <p class="text-white/90 mb-4 text-sm">Get the latest insights delivered to your inbox</p>
+                    <form id="newsletter-form" class="space-y-3">
+                        <input type="email" 
+                               class="w-full px-4 py-3 rounded-unik-md border-none focus:outline-none focus:ring-2 focus:ring-white/30 text-unik-dark"
+                               placeholder="Your email address" 
+                               required>
+                        <button type="submit" 
+                                class="w-full bg-white text-unik-primary font-semibold py-3 rounded-unik-md hover:bg-white/90 transition-colors">
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
 
                 <!-- AdSense Placeholder -->
-                <div class="sidebar-section">
-                    <div class="adsense-placeholder"
-                        style="background: #f3f4f6; height: 250px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                        <span style="color: #9ca3af;">AdSense Advertisement</span>
-                    </div>
+                <div class="bg-unik-light border-2 border-dashed border-unik-border rounded-unik-lg p-6 text-center">
+                    <p class="text-sm text-unik-muted">AdSense Advertisement</p>
                 </div>
             </aside>
         </div>
     </div>
+    
     @include('common.footer')
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const newsletterForm = document.getElementById('newsletter-form');
@@ -243,7 +287,6 @@
                 newsletterForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     const email = this.querySelector('input[type="email"]').value;
-
                     alert('Thank you for subscribing with: ' + email);
                     this.reset();
                 });
@@ -255,8 +298,7 @@
                     if (e.key === 'Enter') {
                         const query = this.value.trim();
                         if (query) {
-                            window.location.href = '{{ route('blog.index') }}?search=' +
-                                encodeURIComponent(query);
+                            window.location.href = '{{ route('blog.index') }}?search=' + encodeURIComponent(query);
                         }
                     }
                 });
@@ -264,12 +306,10 @@
 
             const blogCards = document.querySelectorAll('.blog-card');
             blogCards.forEach(card => {
-                const title = card.querySelector('.blog-title').textContent;
-                const description = card.querySelector('.blog-excerpt').textContent;
-                const datePublished = card.querySelector('meta[itemprop="datePublished"]')?.getAttribute(
-                    'content');
-                const dateModified = card.querySelector('meta[itemprop="dateModified"]')?.getAttribute(
-                    'content');
+                const title = card.querySelector('.blog-title')?.textContent;
+                const description = card.querySelector('.blog-excerpt')?.textContent;
+                const datePublished = card.querySelector('meta[itemprop="datePublished"]')?.getAttribute('content');
+                const dateModified = card.querySelector('meta[itemprop="dateModified"]')?.getAttribute('content');
 
                 if (title && description) {
                     const schema = {
@@ -302,5 +342,4 @@
         });
     </script>
 </body>
-
 </html>

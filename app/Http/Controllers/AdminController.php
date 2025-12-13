@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Auth;
 class AdminController extends Controller
 {
 
+    public function handleLogin(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            return $this->login($request);
+        }
+        return $this->showLoginForm();
+    }
     public function showLoginForm()
     {
         if (Auth::check()) {
@@ -56,6 +63,4 @@ class AdminController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Session data deleted successfully.']);
     }
-
-    
 }

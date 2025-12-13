@@ -1,668 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Unik Muse</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/blog.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/readmore.css') }}">
+</head>
+<body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
-    <style>
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+    
+    <!-- Contact Hero -->
+    <section class="py-12 md:py-16 bg-gradient-to-br from-unik-primary/10 via-unik-light to-unik-accent/10">
+        <div class="container-unik text-center">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-unik-dark mb-4 font-serif">
+                Get In Touch
+            </h1>
+            <p class="text-lg md:text-xl text-unik-muted max-w-3xl mx-auto">
+                We'd love to hear from you! Whether you have questions, feedback, or collaboration ideas, 
+                <span class="text-unik-primary font-semibold">your thoughts inspire us</span>.
+            </p>
+        </div>
+    </section>
 
-        /* Contact Hero */
-        .contact-hero {
-            padding: 80px 0 40px;
-            text-align: center;
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(41, 128, 185, 0.05) 100%);
-            margin-bottom: 60px;
-        }
+    <!-- Contact Container -->
+    <section class="py-8 md:py-12 lg:py-16">
+        <div class="container-unik">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+                <!-- Contact Information -->
+                <div class="bg-white rounded-unik-lg shadow-unik-md p-6 md:p-8 border border-unik-border">
+                    <h2 class="text-2xl md:text-3xl font-bold text-unik-dark mb-8 font-serif relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:h-1 after:bg-unik-primary">
+                        Contact Information
+                    </h2>
 
-        .contact-hero h1 {
-            font-size: 48px;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .contact-hero p {
-            font-size: 20px;
-            color: #7f8c8d;
-            max-width: 700px;
-            margin: 0 auto 20px;
-        }
-
-        .highlight {
-            color: #3498db;
-            font-weight: 600;
-        }
-
-        /* Contact Container */
-        .contact-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            padding: 0 0 80px;
-        }
-
-        @media (max-width: 992px) {
-            .contact-container {
-                grid-template-columns: 1fr;
-                gap: 40px;
-            }
-        }
-
-        /* Contact Info */
-        .contact-info {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .contact-info h2 {
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 32px;
-            position: relative;
-            padding-bottom: 15px;
-        }
-
-        .contact-info h2:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background-color: #3498db;
-        }
-
-        .info-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 30px;
-        }
-
-        .info-icon {
-            width: 50px;
-            height: 50px;
-            background-color: rgba(52, 152, 219, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-
-        .info-icon i {
-            font-size: 20px;
-            color: #3498db;
-        }
-
-        .info-content h3 {
-            color: #2c3e50;
-            margin-bottom: 5px;
-            font-size: 20px;
-        }
-
-        .info-content p {
-            color: #7f8c8d;
-            margin-bottom: 5px;
-        }
-
-        .info-content a {
-            color: #3498db;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .info-content a:hover {
-            color: #2980b9;
-            text-decoration: underline;
-        }
-
-        /* Social Links */
-        .social-section {
-            margin-top: 40px;
-        }
-
-        .social-section h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .social-links a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 45px;
-            height: 45px;
-            background-color: #2c3e50;
-            color: white;
-            border-radius: 50%;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
-        .social-links a:hover {
-            background-color: #3498db;
-            transform: translateY(-3px);
-        }
-
-        /* Contact Form */
-        .contact-form {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .contact-form h2 {
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 32px;
-            position: relative;
-            padding-bottom: 15px;
-        }
-
-        .contact-form h2:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background-color: #3498db;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            font-family: inherit;
-            transition: border-color 0.3s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        textarea.form-control {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        @media (max-width: 576px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Submit Button */
-        .submit-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .submit-btn:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(41, 128, 185, 0.2);
-        }
-
-        .submit-btn i {
-            margin-right: 10px;
-        }
-
-        /* Form Status Messages */
-        .form-status {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .form-status.success {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: #27ae60;
-            border: 1px solid #27ae60;
-            display: block;
-        }
-
-        .form-status.error {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: #c0392b;
-            border: 1px solid #c0392b;
-            display: block;
-        }
-
-        /* FAQ Section */
-        .faq-section {
-            padding: 80px 0;
-            /* background-color: #f5f7fa; */
-            margin-top: 40px;
-        }
-
-        .faq-section h2 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 50px;
-            font-size: 36px;
-        }
-
-        .faq-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            background: white;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .faq-question {
-            padding: 20px;
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.3s;
-        }
-
-        .faq-question:hover {
-            background-color: #f9f9f9;
-        }
-
-        .faq-question i {
-            transition: transform 0.3s;
-        }
-
-        .faq-question.active i {
-            transform: rotate(180deg);
-        }
-
-        .faq-answer {
-            padding: 0 20px;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s ease-out;
-        }
-
-        .faq-answer.active {
-            padding: 20px;
-            max-height: 500px;
-        }
-
-        .faq-answer p {
-            color: #555;
-            line-height: 1.7;
-        }
-
-        /* Map Section */
-        .map-section {
-            padding: 40px 0;
-        }
-
-        .map-container {
-            height: 400px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .map-placeholder {
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .map-placeholder i {
-            font-size: 60px;
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-
-        .map-placeholder h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-    </style>
-    <div class="container">
-        <!-- Contact Hero -->
-        <section class="contact-hero">
-            <div class="container">
-                <h1>Get In Touch</h1>
-                <p>We'd love to hear from you! Whether you have questions, feedback, or collaboration ideas, <span
-                        class="highlight">your thoughts inspire us</span>.</p>
-            </div>
-        </section>
-
-        <!-- Contact Container -->
-        <div class="container contact-container">
-            <!-- Contact Information -->
-            <div class="contact-info">
-                <h2>Contact Information</h2>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Our Location</h3>
-                        <p>666 Virtual City</p>
-                        <p>Creative District, Muse City 10001</p>
-                    </div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Email Us</h3>
-                        <p>General Inquiries: <a href="mailto:hello@unikmuse.com">hello@unikmuse.com</a></p>
-                        <p>Collaborations: <a href="mailto:collab@unikmuse.com">collab@unikmuse.com</a></p>
-                    </div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-phone"></i>
-                    </div>
-                    <div class="info-content">
-                        <h3>Call Us</h3>
-                        <p>Phone: <a href="tel:+XXXXXXXXXX">+91 (XXX) XXX-XXXX</a></p>
-                        <p>Hours: Monday-Friday, 9am-5pm EST</p>
-                    </div>
-                </div>
-
-                <div class="social-section">
-                    <h3>Follow Us</h3>
-                    <div class="social-links">
-                        {{-- <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a> --}}
-                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                        {{-- <a href="#" title="Pinterest"><i class="fab fa-pinterest-p"></i></a> --}}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contact Form -->
-            <div class="contact-form">
-                <h2>Send a Message</h2>
-
-                <div id="formStatus" class="form-status"></div>
-
-                <form id="contactForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name">Full Name *</label>
-                            <input type="text" id="name" name="name" class="form-control"
-                                placeholder="Your Name" required>
+                    <!-- Location -->
+                    <div class="flex items-start gap-4 md:gap-6 mb-8">
+                        <div class="w-12 h-12 bg-unik-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-map-marker-alt text-unik-primary text-lg"></i>
                         </div>
-
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" class="form-control"
-                                placeholder="your@email.com" required>
+                        <div>
+                            <h3 class="text-lg md:text-xl font-semibold text-unik-dark mb-2">Our Location</h3>
+                            <p class="text-unik-muted">666 Virtual City</p>
+                            <p class="text-unik-muted">Creative District, Muse City 10001</p>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="subject">Subject *</label>
-                        <input type="text" id="subject" name="subject" class="form-control"
-                            placeholder="What is this regarding?" required>
+                    <!-- Email -->
+                    <div class="flex items-start gap-4 md:gap-6 mb-8">
+                        <div class="w-12 h-12 bg-unik-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-envelope text-unik-primary text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg md:text-xl font-semibold text-unik-dark mb-2">Email Us</h3>
+                            <p class="text-unik-muted mb-1">
+                                General Inquiries: <a href="mailto:hello@unikmuse.com" class="text-unik-primary hover:text-unik-secondary hover:underline transition-colors">hello@unikmuse.com</a>
+                            </p>
+                            <p class="text-unik-muted">
+                                Collaborations: <a href="mailto:collab@unikmuse.com" class="text-unik-primary hover:text-unik-secondary hover:underline transition-colors">collab@unikmuse.com</a>
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="category">Category *</label>
-                        <select id="category" name="category" class="form-control" required>
-                            <option value="" disabled selected>Select a category</option>
-                            <option value="general">General Inquiry</option>
-                            <option value="feedback">Website Feedback</option>
-                            <option value="collaboration">Collaboration Idea</option>
-                            <option value="guest-post">Guest Post Proposal</option>
-                            <option value="technical">Technical Issue</option>
-                            <option value="other">Other</option>
-                        </select>
+                    <!-- Phone -->
+                    <div class="flex items-start gap-4 md:gap-6 mb-8">
+                        <div class="w-12 h-12 bg-unik-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-phone text-unik-primary text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg md:text-xl font-semibold text-unik-dark mb-2">Call Us</h3>
+                            <p class="text-unik-muted mb-1">
+                                Phone: <a href="tel:+XXXXXXXXXX" class="text-unik-primary hover:text-unik-secondary hover:underline transition-colors">+91 (XXX) XXX-XXXX</a>
+                            </p>
+                            <p class="text-unik-muted">Hours: Monday-Friday, 9am-5pm EST</p>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="message">Your Message *</label>
-                        <textarea id="message" name="message" class="form-control" placeholder="What would you like to share with us?"
-                            required></textarea>
+                    <!-- Social Links -->
+                    <div class="mt-8 pt-8 border-t border-unik-border">
+                        <h3 class="text-lg md:text-xl font-semibold text-unik-dark mb-4">Follow Us</h3>
+                        <div class="flex gap-3">
+                            <a href="#" class="w-10 h-10 bg-unik-dark text-white rounded-full flex items-center justify-center hover:bg-unik-primary hover:-translate-y-1 transition-all duration-300" title="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-unik-dark text-white rounded-full flex items-center justify-center hover:bg-unik-primary hover:-translate-y-1 transition-all duration-300" title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-unik-dark text-white rounded-full flex items-center justify-center hover:bg-unik-primary hover:-translate-y-1 transition-all duration-300" title="LinkedIn">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
                     </div>
+                </div>
 
-                    <button type="submit" class="submit-btn">
-                        <i class="fas fa-paper-plane"></i> Send Message
-                    </button>
-                </form>
+                <!-- Contact Form -->
+                <div class="bg-white rounded-unik-lg shadow-unik-md p-6 md:p-8 border border-unik-border">
+                    <h2 class="text-2xl md:text-3xl font-bold text-unik-dark mb-8 font-serif relative pb-3 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-16 after:h-1 after:bg-unik-primary">
+                        Send a Message
+                    </h2>
+
+                    <div id="formStatus" class="hidden mb-6 p-4 rounded-unik-md"></div>
+
+                    <form id="contactForm" class="space-y-6">
+                        <!-- Name & Email Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-unik-dark font-medium mb-2">
+                                    Full Name *
+                                </label>
+                                <input type="text" 
+                                       id="name" 
+                                       name="name" 
+                                       class="w-full px-4 py-3 border border-unik-border rounded-unik-md focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent transition-all duration-300"
+                                       placeholder="Your Name" 
+                                       required>
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-unik-dark font-medium mb-2">
+                                    Email Address *
+                                </label>
+                                <input type="email" 
+                                       id="email" 
+                                       name="email" 
+                                       class="w-full px-4 py-3 border border-unik-border rounded-unik-md focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent transition-all duration-300"
+                                       placeholder="your@email.com" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div>
+                            <label for="subject" class="block text-unik-dark font-medium mb-2">
+                                Subject *
+                            </label>
+                            <input type="text" 
+                                   id="subject" 
+                                   name="subject" 
+                                   class="w-full px-4 py-3 border border-unik-border rounded-unik-md focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent transition-all duration-300"
+                                   placeholder="What is this regarding?" 
+                                   required>
+                        </div>
+
+                        <!-- Category -->
+                        <div>
+                            <label for="category" class="block text-unik-dark font-medium mb-2">
+                                Category *
+                            </label>
+                            <select id="category" 
+                                    name="category" 
+                                    class="w-full px-4 py-3 border border-unik-border rounded-unik-md focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent transition-all duration-300"
+                                    required>
+                                <option value="" disabled selected>Select a category</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="feedback">Website Feedback</option>
+                                <option value="collaboration">Collaboration Idea</option>
+                                <option value="guest-post">Guest Post Proposal</option>
+                                <option value="technical">Technical Issue</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Message -->
+                        <div>
+                            <label for="message" class="block text-unik-dark font-medium mb-2">
+                                Your Message *
+                            </label>
+                            <textarea id="message" 
+                                      name="message" 
+                                      rows="6"
+                                      class="w-full px-4 py-3 border border-unik-border rounded-unik-md focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent transition-all duration-300 resize-y"
+                                      placeholder="What would you like to share with us?" 
+                                      required></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" 
+                                class="w-full bg-unik-primary text-white font-semibold py-4 rounded-unik-md hover:bg-unik-primary/90 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Send Message</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
+    </section>
 
-        <!-- Map Section -->
-        <section class="container map-section">
-            <div class="map-container">
-                <div class="map-placeholder">
-                    <i class="fas fa-map-marked-alt"></i>
-                    <h3>Our Virtual Headquarters</h3>
-                    <p>Unik Muse operates as a digital-first publication with contributors from around the world.</p>
-                    <p>Our main coordination hub is based in Muse City, but our ideas know no borders.</p>
+    <!-- Map Section -->
+    <section class="py-8 md:py-12">
+        <div class="container-unik">
+            <div class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent rounded-unik-lg shadow-unik-lg overflow-hidden h-64 md:h-80">
+                <div class="w-full h-full flex flex-col items-center justify-center text-white text-center p-6">
+                    <i class="fas fa-map-marked-alt text-5xl md:text-6xl mb-4 opacity-90"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-2 font-serif">Our Virtual Headquarters</h3>
+                    <p class="text-white/90 max-w-2xl">
+                        Unik Muse operates as a digital-first publication with contributors from around the world.
+                    </p>
+                    <p class="text-white/90">
+                        Our main coordination hub is based in Muse City, but our ideas know no borders.
+                    </p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- FAQ Section -->
-        <section class="faq-section">
-            <div class="container">
-                <h2>Frequently Asked Questions</h2>
-                <div class="faq-container">
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            <span>How long does it take to get a response?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p>We strive to respond to all inquiries within 24-48 hours during weekdays. For more
-                                complex
-                                questions or collaboration proposals, it may take up to 3-5 business days as we give
-                                each
-                                idea the consideration it deserves.</p>
-                        </div>
+    <!-- FAQ Section -->
+    <section class="py-8 md:py-12 lg:py-16">
+        <div class="container-unik">
+            <h2 class="text-2xl md:text-3xl font-bold text-unik-dark mb-8 md:mb-12 text-center font-serif">
+                Frequently Asked Questions
+            </h2>
+            
+            <div class="max-w-3xl mx-auto space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="bg-white rounded-unik-lg shadow-unik-sm overflow-hidden border border-unik-border">
+                    <div class="faq-question cursor-pointer p-5 md:p-6 flex justify-between items-center hover:bg-unik-light/50 transition-colors">
+                        <span class="text-lg font-semibold text-unik-dark">How long does it take to get a response?</span>
+                        <i class="fas fa-chevron-down text-unik-primary transition-transform duration-300"></i>
                     </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            <span>Do you accept guest posts?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p>Yes! We welcome thoughtful guest contributions that align with our mission of providing
-                                unique perspectives and inspiration. Please use the "Guest Post Proposal" category when
-                                submitting your idea through our contact form, and include links to your previous work
-                                or
-                                writing samples.</p>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            <span>Can I suggest a topic for the blog?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p>Absolutely! We value our readers' insights and regularly consider topic suggestions.
-                                While we
-                                can't guarantee every suggestion will become a post, we read and consider all ideas. The
-                                most successful suggestions are those that offer a unique angle on a subject rather than
-                                covering well-trodden ground.</p>
-                        </div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question">
-                            <span>Do you offer advertising or sponsored content?</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                        <div class="faq-answer">
-                            <p>We carefully select a limited number of partnerships with brands and organizations that
-                                align
-                                with our values. All sponsored content is clearly marked as such and maintains the same
-                                quality standards as our regular posts. For partnership inquiries, please select
-                                "Collaboration Idea" in the contact form.</p>
+                    <div class="faq-answer overflow-hidden max-h-0 transition-all duration-300">
+                        <div class="p-5 md:p-6 pt-0 text-unik-muted">
+                            <p>We strive to respond to all inquiries within 24-48 hours during weekdays. For more complex questions or collaboration proposals, it may take up to 3-5 business days as we give each idea the consideration it deserves.</p>
                         </div>
                     </div>
                 </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="bg-white rounded-unik-lg shadow-unik-sm overflow-hidden border border-unik-border">
+                    <div class="faq-question cursor-pointer p-5 md:p-6 flex justify-between items-center hover:bg-unik-light/50 transition-colors">
+                        <span class="text-lg font-semibold text-unik-dark">Do you accept guest posts?</span>
+                        <i class="fas fa-chevron-down text-unik-primary transition-transform duration-300"></i>
+                    </div>
+                    <div class="faq-answer overflow-hidden max-h-0 transition-all duration-300">
+                        <div class="p-5 md:p-6 pt-0 text-unik-muted">
+                            <p>Yes! We welcome thoughtful guest contributions that align with our mission of providing unique perspectives and inspiration. Please use the "Guest Post Proposal" category when submitting your idea through our contact form, and include links to your previous work or writing samples.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="bg-white rounded-unik-lg shadow-unik-sm overflow-hidden border border-unik-border">
+                    <div class="faq-question cursor-pointer p-5 md:p-6 flex justify-between items-center hover:bg-unik-light/50 transition-colors">
+                        <span class="text-lg font-semibold text-unik-dark">Can I suggest a topic for the blog?</span>
+                        <i class="fas fa-chevron-down text-unik-primary transition-transform duration-300"></i>
+                    </div>
+                    <div class="faq-answer overflow-hidden max-h-0 transition-all duration-300">
+                        <div class="p-5 md:p-6 pt-0 text-unik-muted">
+                            <p>Absolutely! We value our readers' insights and regularly consider topic suggestions. While we can't guarantee every suggestion will become a post, we read and consider all ideas. The most successful suggestions are those that offer a unique angle on a subject rather than covering well-trodden ground.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="bg-white rounded-unik-lg shadow-unik-sm overflow-hidden border border-unik-border">
+                    <div class="faq-question cursor-pointer p-5 md:p-6 flex justify-between items-center hover:bg-unik-light/50 transition-colors">
+                        <span class="text-lg font-semibold text-unik-dark">Do you offer advertising or sponsored content?</span>
+                        <i class="fas fa-chevron-down text-unik-primary transition-transform duration-300"></i>
+                    </div>
+                    <div class="faq-answer overflow-hidden max-h-0 transition-all duration-300">
+                        <div class="p-5 md:p-6 pt-0 text-unik-muted">
+                            <p>We carefully select a limited number of partnerships with brands and organizations that align with our values. All sponsored content is clearly marked as such and maintains the same quality standards as our regular posts. For partnership inquiries, please select "Collaboration Idea" in the contact form.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>
-        <script>
-            // Form Submission Handler
-            document.getElementById('contactForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+        </div>
+    </section>
 
-                // Get form elements
-                const form = e.target;
-                const formStatus = document.getElementById('formStatus');
+    @include('common.footer')
 
-                // Simple validation
-                const name = document.getElementById('name').value.trim();
-                const email = document.getElementById('email').value.trim();
-                const subject = document.getElementById('subject').value.trim();
-                const category = document.getElementById('category').value;
-                const message = document.getElementById('message').value.trim();
+    <script>
+        // Form Submission Handler
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-                if (!name || !email || !subject || !category || !message) {
-                    showFormStatus('Please fill in all required fields.', 'error');
-                    return;
-                }
+            // Get form elements
+            const form = e.target;
+            const formStatus = document.getElementById('formStatus');
 
-                // Email validation
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(email)) {
-                    showFormStatus('Please enter a valid email address.', 'error');
-                    return;
-                }
+            // Simple validation
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const category = document.getElementById('category').value;
+            const message = document.getElementById('message').value.trim();
 
-                // In a real application, you would send the form data to a server here
-                // For this demo, we'll simulate a successful submission
-
-                // Show loading state
-                const submitBtn = form.querySelector('.submit-btn');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-                submitBtn.disabled = true;
-
-                // Simulate API call
-                setTimeout(() => {
-                    // Show success message
-                    showFormStatus('Thank you for your message! We\'ll get back to you within 24-48 hours.',
-                        'success');
-
-                    // Reset form
-                    form.reset();
-
-                    // Reset button
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }, 1500);
-            });
-
-            function showFormStatus(message, type) {
-                const formStatus = document.getElementById('formStatus');
-                formStatus.textContent = message;
-                formStatus.className = 'form-status ' + type;
-
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    formStatus.style.display = 'none';
-                }, 5000);
+            if (!name || !email || !subject || !category || !message) {
+                showFormStatus('Please fill in all required fields.', 'error');
+                return;
             }
 
-            // FAQ Toggle Functionality
-            document.querySelectorAll('.faq-question').forEach(question => {
-                question.addEventListener('click', () => {
-                    const answer = question.nextElementSibling;
-                    const isActive = question.classList.contains('active');
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showFormStatus('Please enter a valid email address.', 'error');
+                return;
+            }
 
-                    // Close all other FAQs
-                    document.querySelectorAll('.faq-question').forEach(q => {
-                        q.classList.remove('active');
-                    });
-                    document.querySelectorAll('.faq-answer').forEach(a => {
-                        a.classList.remove('active');
-                    });
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
 
-                    // Open clicked FAQ if it wasn't already active
-                    if (!isActive) {
-                        question.classList.add('active');
-                        answer.classList.add('active');
-                    }
-                });
+            // Simulate API call
+            setTimeout(() => {
+                // Show success message
+                showFormStatus('Thank you for your message! We\'ll get back to you within 24-48 hours.', 'success');
+
+                // Reset form
+                form.reset();
+
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 1500);
+        });
+
+        function showFormStatus(message, type) {
+            const formStatus = document.getElementById('formStatus');
+            formStatus.textContent = message;
+            formStatus.className = `p-4 rounded-unik-md mb-6 ${type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`;
+            formStatus.classList.remove('hidden');
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                formStatus.classList.add('hidden');
+            }, 5000);
+        }
+
+        // FAQ Toggle Functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const icon = question.querySelector('i');
+                
+                // Toggle active class on question
+                question.classList.toggle('active');
+                
+                // Toggle icon rotation
+                icon.classList.toggle('rotate-180');
+                
+                // Toggle answer visibility
+                if (answer.style.maxHeight) {
+                    answer.style.maxHeight = null;
+                } else {
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                }
+            });
+        });
+
+        // Add focus animations to form inputs
+        document.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('transform', '-translate-y-1');
             });
 
-            // Add a simple animation to form inputs on focus
-            document.querySelectorAll('.form-control').forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.style.transform = 'translateY(-2px)';
-                });
-
-                input.addEventListener('blur', function() {
-                    this.parentElement.style.transform = 'translateY(0)';
-                });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('transform', '-translate-y-1');
             });
-        </script>
-    </div>
-@include('common.footer')
+        });
+    </script>
+</body>
+</html>

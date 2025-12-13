@@ -63,7 +63,7 @@
                     <p class="text-white/90 text-sm mb-2">Subscribe to our newsletter</p>
                     <form class="flex gap-2">
                         <input type="email" placeholder="Your email"
-                            class="flex-grow px-3 py-2 rounded-unik-md border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-accent text-unik-dark">
+                            class="flex-grow px-3 py-2 rounded-unik-md border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-accent unik-text-dark">
                         <button type="submit"
                             class="bg-unik-secondary hover:bg-unik-secondary/90 text-white px-4 py-2 rounded-unik-md transition-colors">
                             <i class="fas fa-paper-plane"></i>
@@ -103,9 +103,9 @@
             <p class="text-white/90 text-sm">
                 &copy; {{ date('Y') }} Unik Muse | All rights reserved.
             </p>
-            <p class="text-white/70 text-xs mt-1">
+            {{-- <p class="text-white/70 text-xs mt-1">
                 Made with <i class="fas fa-heart text-unik-accent"></i> for inspiring minds
-            </p>
+            </p> --}}
         </div>
     </div>
 </footer>
