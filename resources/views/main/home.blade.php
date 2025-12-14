@@ -199,7 +199,13 @@
                                         {{ $value->title }}</h3>
                                     <p
                                         class="card-text text-unik-muted mb-4 text-sm md:text-base leading-relaxed line-clamp-3">
-                                        {{ Str::limit($value->description, 150) }}</p>
+                                        {{ Str::limit(
+                                            strip_tags(
+                                                str_replace(['## ', '### ', '#### ', '##', '###', '####'], '', $value->excerpt ?? ($value->description ?? '')),
+                                            ),
+                                            120,
+                                        ) }}
+                                    </p>
 
                                     <div
                                         class="card-meta flex justify-between items-center mt-auto pt-4 border-t border-unik-border">
@@ -245,7 +251,7 @@
                             <li><a href="{{ route('category.show', 'news') }}"
                                     class="nav-link block p-2 rounded-unik-md hover:bg-unik-accent/5 text-unik-accent transition-colors">News</a>
                             </li>
-                            <li><a href="{{ route('category.show', 'lifestyle') }}"
+                            <li><a href="{{ route('category.show', 'life-style') }}"
                                     class="nav-link block p-2 rounded-unik-md hover:bg-unik-light/20 text-unik-secondary transition-colors">Lifestyle</a>
                             </li>
                             <li><a href="{{ route('category.show', 'digital-trends') }}"

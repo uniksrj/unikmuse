@@ -68,29 +68,33 @@
 
                 <ul class="dropdown-menu_category absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
                     aria-label="Submenu">
-                    <li><a href="/category/technology"
+                    <li><a href="{{ route('category.show', 'technology') }}"
                             class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Technology</a>
                     </li>
-                    <li><a href="/category/travel"
+                    <li><a href="{{ route('category.show', 'travel') }}"
                             class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Travel</a>
                     </li>
-                    <li><a href="/category/news"
-                            class="block px-4 py-3 text-unik-accent hover:bg-unik-light/20 transition-colors">News</a>
-                    </li>
-                    <li><a href="/category/lifestyle"
+                    <li><a href="{{ route('category.show', 'life-style') }}"
                             class="block px-4 py-3 text-unik-light hover:bg-unik-light/20 transition-colors text-unik-dark">Lifestyle</a>
                     </li>
-                    <li><a href="/category/inspiration"
-                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Inspiration</a>
+                    <li><a href="{{ route('category.show', 'digital-trends') }}"
+                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Digital
+                            Trends</a>
                     </li>
-                    <li><a href="/category/photo-stories"
-                            class="block px-4 py-3 text-unik-accent hover:bg-unik-light/20 transition-colors">Photo
-                            Stories</a></li>
-                    <li><a href="/category/guides"
-                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Guides</a>
+                    <li><a href="{{ route('category.show', 'productivity') }}"
+                            class="block px-4 py-3 text-unik-accent hover:bg-unik-light/20 transition-colors">Productivity
+                        </a></li>
+                    <li><a href="{{ route('category.show', 'news-updates') }}"
+                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">News
+                            & Updates</a>
                     </li>
-                    <li><a href="/category/collections"
-                            class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Collections</a>
+                    <li><a href="{{ route('category.show', 'stories-experiences') }}"
+                            class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Stories
+                            & Experiences</a>
+                    </li>
+                    <li><a href="{{ route('category.show', 'creativity-inspiration') }}"
+                            class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Creativity
+                            & Inspiration</a>
                     </li>
                 </ul>
             </li>

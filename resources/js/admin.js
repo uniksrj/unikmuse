@@ -103,8 +103,232 @@ function initializeSelect2() {
     }
 }
 
+function extractHeadings(content) {
+    var headings = [];
+    var lines = content.split('\n');
+
+    $.each(lines, function (lineIndex, line) {
+        line = $.trim(line);
+
+        if (line.startsWith('## ')) {
+            headings.push({
+                id: 'section-' + (headings.length + 1),
+                title: line.replace('## ', '').trim(),
+                level: 2,
+                line: lineIndex
+            });
+        } else if (line.startsWith('### ')) {
+            headings.push({
+                id: 'section-' + (headings.length + 1),
+                title: line.replace('### ', '').trim(),
+                level: 3,
+                line: lineIndex
+            });
+        } else if (line.startsWith('#### ')) {
+            headings.push({
+                id: 'section-' + (headings.length + 1),
+                title: line.replace('#### ', '').trim(),
+                level: 4,
+                line: lineIndex
+            });
+        }
+
+        var htmlMatch = line.match(/<h([2-4])[^>]*>(.*?)<\/h\1>/i);
+        if (htmlMatch) {
+            headings.push({
+                id: 'section-' + (headings.length + 1),
+                title: $(htmlMatch[2]).text().trim(),
+                level: parseInt(htmlMatch[1]),
+                line: lineIndex
+            });
+        }
+    });
+
+    return headings;
+}
+
+function createSlug(text) {
+    return text.toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+}
+
+function calculateReadingTime(content) {
+    var words = content.trim().split(/\s+/).length;
+    var readingTime = Math.max(1, Math.ceil(words / 200));
+    return { words: words, readingTime: readingTime };
+}
+
+function generateTOC() {
+    var content = $('#description').val();
+
+    if (!content.trim()) {
+        alert('Please enter some content first!');
+        return;
+    }
+
+    var headings = extractHeadings(content);
+
+    if (headings.length === 0) {
+        alert('No headings found! Use ## for main headings, ### for subheadings in your content.');
+        return;
+    }
+
+    var tocData = $.map(headings, function (heading, index) {
+        return {
+            id: heading.id,
+            title: heading.title,
+            level: heading.level,
+            slug: createSlug(heading.title),
+            order: index + 1
+        };
+    });
+
+    $('#tableOfContents').val(JSON.stringify(tocData));
+
+    var stats = calculateReadingTime(content);
+    $('#wordCount').val(stats.words);
+    $('#readingTime').val(stats.readingTime);
+
+    // Update preview
+    updateTOCPreview(tocData, stats.words, stats.readingTime);
+
+    // Show preview and stats
+    $('#tocPreviewCard').show();
+    $('#tocStats').show();
+}
+
+function updateTOCPreview(tocData, words, readingTime) {
+    var $tocPreviewList = $('#tocPreviewList');
+    $tocPreviewList.empty();
+
+    $.each(tocData, function (index, item) {
+        var padding = (item.level - 2) * 20;
+        var $li = $('<li>').addClass('mb-2').css('padding-left', padding + 'px');
+
+        $li.html(`
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary me-2" style="min-width: 24px;">${index + 1}</span>
+                    <span class="small">${item.title}</span>
+                </div>
+            `);
+
+        $tocPreviewList.append($li);
+    });
+
+    // Update stats
+    $('#tocSectionCount').text(tocData.length + ' sections');
+    $('#statSections').text(tocData.length);
+    $('#statWords').text(words.toLocaleString());
+    $('#statReadTime').text(readingTime + ' min');
+}
+
+function resetTOC() {
+    $('#tableOfContents').val('');
+    $('#wordCount').val('');
+    $('#readingTime').val('');
+    $('#tocPreviewCard').hide();
+    $('#tocStats').hide();
+    $('#tocPreviewList').empty();
+}
+
+function loadExistingTOC() {
+    var existingTOC = $('#tableOfContents').val();
+    var content = $('#description').val();
+
+    if (existingTOC) {
+        try {
+            var tocData = JSON.parse(existingTOC);
+            if (tocData.length > 0) {
+                var stats = calculateReadingTime(content);
+                $('#wordCount').val(stats.words);
+                $('#readingTime').val(stats.readingTime);
+
+                updateTOCPreview(tocData, stats.words, stats.readingTime);
+                $('#tocPreviewCard').show();
+                $('#tocStats').show();
+            }
+        } catch (e) {
+            console.log('Error parsing existing TOC:', e);
+        }
+    }
+}
+
+function suggestMissingHeadings() {
+    var content = $('#description').val();
+    var existingTOC = $('#tableOfContents').val();
+    var existingHeadings = [];
+
+    if (existingTOC) {
+        try {
+            var tocData = JSON.parse(existingTOC);
+            existingHeadings = tocData.map(function (item) {
+                return item.title.toLowerCase();
+            });
+        } catch (e) {
+        }
+    }
+
+    var lines = content.split('\n');
+    var potentialHeadings = [];
+
+    $.each(lines, function (index, line) {
+        line = $.trim(line);
+        if (line && line.length > 10 && line.length < 200) {
+            if (!line.endsWith('.') && !line.endsWith('!') && !line.endsWith('?')) {
+                var words = line.split(' ');
+                if (words.length >= 2 && words.length <= 10) {
+                    var firstWord = words[0];
+                    if (firstWord === firstWord.toUpperCase() ||
+                        firstWord.charAt(0) === firstWord.charAt(0).toUpperCase()) {
+
+                        var lineLower = line.toLowerCase();
+                        if ($.inArray(lineLower, existingHeadings) === -1) {
+                            potentialHeadings.push(line);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (potentialHeadings.length > 0) {
+        if (confirm('Found ' + potentialHeadings.length + ' potential headings not in TOC. Add them as H2?\n\n' +
+            potentialHeadings.slice(0, 5).join('\n') +
+            (potentialHeadings.length > 5 ? '\n...and ' + (potentialHeadings.length - 5) + ' more' : ''))) {
+
+            var formattedContent = content;
+            $.each(potentialHeadings, function (index, heading) {
+                var regex = new RegExp('^' + heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'm');
+                formattedContent = formattedContent.replace(regex, '## ' + heading);
+            });
+
+            $('#description').val(formattedContent);
+            generateTOC();
+        }
+    }
+}
+
+function checkForMissingTOC() {
+    var content = $('#description').val();
+    var existingTOC = $('#tableOfContents').val();
+
+    if (content && !existingTOC) {
+        var headings = extractHeadings(content);
+        if (headings.length > 0) {
+            if (confirm('Found ' + headings.length + ' headings in content but no TOC. Generate TOC now?')) {
+                generateTOC();
+            }
+        }
+    }
+}
+
 $(document).ready(function () {
     initializeSelect2();
+    loadExistingTOC();
+    checkForMissingTOC();
     console.log("Admin JS is ready!");
     // setTimeout(() => {
     //     $.ajax({
@@ -214,8 +438,46 @@ $(document).ready(function () {
         }
     });
 
+    var tocTimeout;
     $('#description').on('input', function () {
         $('#descCount').text($(this).val().length);
+        clearTimeout(tocTimeout);
+        tocTimeout = setTimeout(function () {
+            if ($('#tableOfContents').val()) {
+                generateTOC();
+            }
+        }, 1000);
+    });
+
+     $('#description').on('blur', function() {
+        var content = $(this).val();
+        var lines = content.split('\n');
+        var hasHeadingFormatIssues = false;
+        var issues = [];
+        
+        $.each(lines, function(index, line) {
+            line = $.trim(line);
+            
+            if (line.match(/^##[^#\s]/) || line.match(/^###[^#\s]/) || line.match(/^####[^#\s]/)) {
+                hasHeadingFormatIssues = true;
+                issues.push(line);
+            }
+        });
+        
+        if (hasHeadingFormatIssues && issues.length > 0) {
+            if (confirm('Found ' + issues.length + ' headings without spaces after ##. Auto-fix?\n\nExample: "' + issues[0] + '"')) {
+                
+                var fixedContent = content;
+                fixedContent = fixedContent.replace(/^##([^#\s])/gm, '## $1');
+                fixedContent = fixedContent.replace(/^###([^#\s])/gm, '### $1');
+                fixedContent = fixedContent.replace(/^####([^#\s])/gm, '#### $1');
+                $(this).val(fixedContent);
+                
+                if ($('#tableOfContents').val()) {
+                    generateTOC();
+                }
+            }
+        }
     });
 
     $('button:contains("Save Draft")').on('click', function (e) {
@@ -296,18 +558,16 @@ $(document).ready(function () {
 
     updateCounters();
 
-    $('#generateSlugBtn').click(function () {
-        var title = $('#postTitle').val().trim();
+    $('#generateSlugBtn').on('click', function () {
+        var title = $('#postTitle').val();
         if (title) {
-            var slug = title
-                .toLowerCase()
-                .replace(/[^\w\s]/gi, '')
+            var slug = title.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
                 .replace(/\s+/g, '-')
-                .substring(0, 100);
+                .replace(/-+/g, '-')
+                .trim();
             $('#postSlug').val(slug);
-            updateCounters();
-        } else {
-            showAlert('error', 'Please enter a title first');
+            $('#slugCount').text(slug.length);
         }
     });
 
@@ -433,5 +693,30 @@ $(document).ready(function () {
                 submitBtn.prop('disabled', false);
             }
         });
+    });
+
+    $('#generateTOCBtn').on('click', generateTOC);
+    $('#resetTOCBtn').on('click', resetTOC);
+
+    // Edit page event 
+    $('#viewTOCBtn').on('click', function () {
+        var existingTOC = $('#tableOfContents').val();
+        if (existingTOC) {
+            try {
+                var tocData = JSON.parse(existingTOC);
+                if (tocData.length > 0) {
+                    alert('Current TOC has ' + tocData.length + ' sections:\n\n' +
+                        tocData.map(function (item, index) {
+                            return (index + 1) + '. ' + item.title;
+                        }).join('\n'));
+                } else {
+                    alert('TOC exists but is empty. Click "Regenerate TOC".');
+                }
+            } catch (e) {
+                alert('Invalid TOC format. Click "Regenerate TOC".');
+            }
+        } else {
+            alert('No TOC generated yet. Click "Regenerate TOC".');
+        }
     });
 });

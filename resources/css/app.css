@@ -22,7 +22,7 @@
     }
 
     @theme inline {
-        --color-unik-primary: var(--unik-primary);
+        --color-unik-primary: var(--unik-primary) !important;
         --color-unik-secondary: var(--unik-secondary);
         --color-unik-accent: var(--unik-accent);
         --color-unik-dark: var(--unik-dark);
@@ -185,7 +185,7 @@
 
     /* Link styles - FIXED */
     a {
-        color: var(--unik-text-light) !important;
+        /* color: var(--unik-text-light) !important; */
         text-decoration: none !important;
         transition: color 0.2s ease-in-out;
     }
@@ -253,6 +253,10 @@
 }
 
 @layer components {
+
+    .toc-link.active {
+        @apply bg-unik-primary/10 border border-unik-primary;
+    }
 
     .btn {
         @apply inline-flex items-center justify-center font-semibold rounded-unik-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
@@ -614,42 +618,44 @@
         font-weight: 700;
     }
 
-     .content-visibility-auto {
+    .content-visibility-auto {
         content-visibility: auto;
         contain-intrinsic-size: 500px;
     }
-    
+
     .will-change-transform {
         will-change: transform;
     }
-    
+
     .img-container {
         aspect-ratio: 16/9;
         background: linear-gradient(110deg, var(--unik-light) 8%, var(--unik-border) 18%, var(--unik-light) 33%);
         background-size: 200% 100%;
         animation: 1.5s shine linear infinite;
     }
-    
+
     @keyframes shine {
-        to { background-position-x: -200%; }
+        to {
+            background-position-x: -200%;
+        }
     }
-    
+
     @media print {
         .no-print {
             display: none !important;
         }
-        
+
         a {
             text-decoration: underline;
             color: #000;
         }
-        
+
         a[href]:after {
             content: " (" attr(href) ")";
             font-size: 90%;
         }
     }
-    
+
     /* Screen reader utilities */
     .sr-only {
         position: absolute;
@@ -662,7 +668,7 @@
         white-space: nowrap;
         border: 0;
     }
-    
+
     .sr-only-focusable:focus {
         position: static;
         width: auto;

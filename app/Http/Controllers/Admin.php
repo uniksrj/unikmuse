@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Admin extends Controller
 {
@@ -56,8 +57,20 @@ class Admin extends Controller
                 'meta_title' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:500',
                 'slug' => 'nullable|string|max:255|unique:newpost_details,slug',
+                'table_of_contents' => 'nullable|json',
+                'reading_time' => 'nullable|integer',
+                'word_count' => 'nullable|integer',
 
             ]);
+            if (empty($validated['table_of_contents'])) {
+                $validated['table_of_contents'] = $this->generateTOC($validated['desc']);
+            }
+
+            if (empty($validated['reading_time'])) {
+                $wordCount = str_word_count(strip_tags($validated['desc']));
+                $validated['word_count'] = $wordCount;
+                $validated['reading_time'] = ceil($wordCount / 200);
+            }
 
             $data = [
                 'title' => $validated['title'],
@@ -68,11 +81,17 @@ class Admin extends Controller
                 'meta_title' => $validated['meta_title'] ?? null,
                 'tags' => json_encode($validated['tags']) ?? null,
                 'meta_description' => $validated['meta_description'] ?? null,
+                'table_of_contents' => $validated['table_of_contents'],
+                'reading_time' => $validated['reading_time'],
+                'word_count' => $validated['word_count'],
                 'active' => 1,
                 'is_featured' => $validated['featured'] ?? 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
+            
+
             if ($request->hasFile('file')) {
 
                 $file = $request->file('file');
@@ -134,7 +153,7 @@ class Admin extends Controller
     {
         $post = DB::table('newpost_details')->where('id', $id)->firstOrFail();
         // echo "<pre>";
-        // print_r($user);
+        // print_r($post);
         // echo "</pre>";
         // return ;
         // $item = DB::findOrFail($id);
@@ -172,7 +191,7 @@ class Admin extends Controller
             $post = DB::table('newpost_details')
                 ->select('file_path')
                 ->where('id', $id)
-                ->first();            
+                ->first();
 
             if ($request->hasFile('file')) {
 
@@ -244,5 +263,30 @@ class Admin extends Controller
         } else {
             return response()->json(['error' => 'Error while deleting the record'], 500);
         }
+    }
+
+    private function generateTOC($content)
+    {
+        $headings = [];
+        $lines = explode("\n", $content);
+
+        foreach ($lines as $index => $line) {
+            $line = trim($line);
+
+            if (preg_match('/^(#{2,4})\s+(.+)$/', $line, $matches)) {
+                $level = strlen($matches[1]);
+                $title = trim($matches[2]);
+
+                $headings[] = [
+                    'id' => 'section-' . (count($headings) + 1),
+                    'title' => $title,
+                    'level' => $level,
+                    'slug' => Str::slug($title),
+                    'order' => count($headings) + 1
+                ];
+            }
+        }
+
+        return json_encode($headings);
     }
 }

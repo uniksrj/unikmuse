@@ -379,6 +379,108 @@
                     </div>
                 </div>
 
+                <div class="form-section">
+                    <div class="d-flex mb-3">
+                        <div style="width: 150px; flex-shrink: 0;">
+                            <label class="form-label">
+                                <i class="fas fa-list-ol me-2"></i>Table of Contents
+                            </label>
+                        </div>
+                        <div style="flex: 1; max-width: 600px;">
+                            <div class="mb-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm mb-2" id="generateTOCBtn">
+                                    <i class="fas fa-magic me-1"></i> Regenerate TOC
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm mb-2" id="resetTOCBtn">
+                                    <i class="fas fa-redo me-1"></i> Clear TOC
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm mb-2" id="viewTOCBtn">
+                                    <i class="fas fa-eye me-1"></i> View Current TOC
+                                </button>
+                                <p class="small text-muted mb-0">Auto-generates from ##, ### headings in your content
+                                </p>
+                            </div>
+
+                            <!-- Hidden fields to store TOC data -->
+                            @php
+                                $tocData = !empty($post->table_of_contents)
+                                    ? json_decode($post->table_of_contents, true)
+                                    : [];
+                                $readingTime =
+                                    $post->reading_time ?? ceil(str_word_count(strip_tags($post->description)) / 200);
+                                $wordCount = $post->word_count ?? str_word_count(strip_tags($post->description));
+                            @endphp
+                            <input type="hidden" name="table_of_contents" id="tableOfContents"
+                                value="{{ !empty($tocData) ? json_encode($tocData) : '' }}">
+                            <input type="hidden" name="reading_time" id="readingTime" value="{{ $readingTime }}">
+                            <input type="hidden" name="word_count" id="wordCount" value="{{ $wordCount }}">
+
+                            <!-- TOC Preview -->
+                            <div class="card mb-3" id="tocPreviewCard"
+                                style="{{ !empty($tocData) ? '' : 'display: none;' }}">
+                                <div
+                                    class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-list me-1"></i> Table of Contents
+                                        <span id="tocSectionCount" class="badge bg-primary ms-2">
+                                            {{ !empty($tocData) ? count($tocData) : '0' }} sections
+                                        </span>
+                                    </h6>
+                                    <div class="small text-muted">
+                                        {{ $readingTime }} min read • {{ number_format($wordCount) }} words
+                                    </div>
+                                </div>
+                                <div class="card-body p-3">
+                                    @if (!empty($tocData))
+                                        <ul id="tocPreviewList" class="list-unstyled mb-0">
+                                            @foreach ($tocData as $index => $item)
+                                                <li class="mb-2"
+                                                    style="padding-left: {{ ($item['level'] - 2) * 20 }}px">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge bg-primary me-2" style="min-width: 24px;">
+                                                            {{ $index + 1 }}
+                                                        </span>
+                                                        <span class="small">{{ $item['title'] }}</span>
+                                                    </div>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <div id="tocPreviewList" class="text-muted small">
+                                            No table of contents generated yet. Click "Regenerate TOC" to create one.
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="row g-2 mt-3" id="tocStats"
+                                style="{{ !empty($tocData) ? '' : 'display: none;' }}">
+                                <div class="col-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <div class="small text-muted">Sections</div>
+                                        <div class="h5 mb-0" id="statSections">
+                                            {{ !empty($tocData) ? count($tocData) : '0' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <div class="small text-muted">Words</div>
+                                        <div class="h5 mb-0" id="statWords">{{ number_format($wordCount) }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <div class="small text-muted">Read Time</div>
+                                        <div class="h5 mb-0" id="statReadTime">{{ $readingTime }} min</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- File Upload Section -->
                 <div class="form-section">
                     <div class="form-row">
@@ -547,10 +649,21 @@
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Tags</label>
+                                        @php
+                                            $postTags = json_decode($post->tags ?? '[]', true) ?? [];
+                                            $allTags = array_unique(array_merge($commonTags, $postTags));
+                                        @endphp
+
                                         <select class="form-control" name="tags[]" id="tagsSelect"
                                             multiple="multiple">
-                                            @foreach ($commonTags as $tag)
-                                                <option value="{{ $tag }}">{{ $tag }}</option>
+                                            @foreach ($allTags as $tag)
+                                                @php
+                                                    $isSelected = in_array($tag, $postTags);
+                                                @endphp
+                                                <option value="{{ $tag }}"
+                                                    {{ $isSelected ? 'selected' : '' }}>
+                                                    {{ $tag }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         <small class="text-muted">Select multiple tags</small>

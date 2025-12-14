@@ -57,3 +57,5 @@ Route::get('/category/{categorySlug}', [Blogmain::class, 'byCategory'])
 //         'category' => $category
 //     ]);
 // })->name('category');
+
+Route::get('/categories', [Blogmain::class, 'categories'])->name('categories.index');

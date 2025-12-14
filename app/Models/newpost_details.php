@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 class newpost_details extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'name',
         'title',
@@ -27,13 +27,18 @@ class newpost_details extends Model
         'file_path',
         'active',
         'tags',
+        'table_of_contents',
+        'reading_time',     
+        'word_count',
+
     ];
 
     protected $casts = [
         'is_featured' => 'boolean',
         'is_published' => 'boolean',
         'active' => 'boolean',
-        'created_date' => 'datetime'
+        'created_date' => 'datetime',
+        'table_of_contents' => 'array',
     ];
 
     protected $attributes = [
@@ -78,26 +83,29 @@ class newpost_details extends Model
     public function scopeLatest($query)
     {
         return $query->published()
-                     ->orderBy('created_date', 'desc');
+            ->orderBy('created_date', 'desc');
     }
 
     public function scopePopular($query)
     {
         return $query->published()
-                     ->orderBy('views_count', 'desc');
-                    //  ->limit(5);
+            ->orderBy('views_count', 'desc');
+        //  ->limit(5);
     }
 
     public function scopeByCategory($query, $category)
     {
+        if (empty($category)) {
+            return $query;
+        }
         return $query->published()
-                     ->where('category', $category);
+            ->where('category', $category);
     }
 
     public function getReadingTimeAttribute()
     {
         $wordCount = str_word_count(strip_tags($this->description));
-        $minutes = ceil($wordCount / 200); 
+        $minutes = ceil($wordCount / 200);
         return $minutes . ' min read';
     }
 
@@ -214,7 +222,7 @@ class newpost_details extends Model
             if (json_last_error() === JSON_ERROR_NONE && is_array($images)) {
                 return $images;
             }
-            return [$this->file_path]; 
+            return [$this->file_path];
         } catch (\Exception $e) {
             return [$this->file_path];
         }

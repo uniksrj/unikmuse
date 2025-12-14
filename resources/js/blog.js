@@ -35,10 +35,10 @@ $(document).ready(function () {
         const imageObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                const img = entry.target;
-                img.classList.add('loaded');
-                imageObserver.unobserve(img);
-            }
+                    const img = entry.target;
+                    img.classList.add('loaded');
+                    imageObserver.unobserve(img);
+                }
             });
         });
         images.forEach(img => imageObserver.observe(img));

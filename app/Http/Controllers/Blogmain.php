@@ -11,14 +11,30 @@ use Illuminate\Support\Facades\DB;
 class Blogmain extends Controller
 {
 
+    private $defaultCategories = [
+        'technology' => 'Technology',
+        'travel' => 'Travel',
+        'life-style' => 'Lifestyle',
+        'digital-trends' => 'Digital Trends',
+        'productivity' => 'Productivity',
+        'tutorials' => 'Tutorials',
+        'news-updates' => 'News & Updates',
+        'stories-experiences' => 'Stories & Experiences',
+        'creativity-inspiration' => 'Creativity & Inspiration'
+    ];
     public function __construct() {}
 
     public function index()
     {
+        $getcategory = request()->get('category');
+        if (empty($getcategory) || !array_key_exists($getcategory, $this->defaultCategories)) {
+            $getcategory = null;
+        }
 
         $featuredPosts = newpost_details::withCount('views')
             ->published()
             ->featured()
+            ->byCategory($getcategory)
             ->recent()
             ->limit(4)
             ->get()
@@ -43,8 +59,9 @@ class Blogmain extends Controller
 
         $posts = newpost_details::withCount('views')
             ->published()
+            ->byCategory($getcategory)
             ->recent()
-            ->paginate(8)
+            ->paginate(4)
             ->through(function ($post) {
                 return [
                     'id' => $post->id,
@@ -66,8 +83,9 @@ class Blogmain extends Controller
 
         $popularPosts = newpost_details::withCount('views')
             ->published()
+            ->byCategory($getcategory)
             ->popular()
-            ->limit(5)
+            ->limit(4)
             ->get()
             ->map(function ($post) {
                 return [
@@ -85,12 +103,13 @@ class Blogmain extends Controller
         $categories = newpost_details::published()
             ->select('category', DB::raw('COUNT(*) as count'))
             ->whereNotNull('category')
+            // ->byCategory($getcategory)
             ->groupBy('category')
             ->get()
             ->pluck('count', 'category')
             ->toArray();
 
-        $defaultCategories = [
+        $CategoriesCount = [
             'Technology' => 0,
             'Travel' => 0,
             'Lifestyle' => 0,
@@ -104,9 +123,9 @@ class Blogmain extends Controller
 
         $categoriesList = [];
 
-        foreach ($defaultCategories as $label => $defaultCount) {
+        foreach ($CategoriesCount as $label => $defaultCount) {
             $lowerKey = strtolower($label);
-            $lowerKey = str_replace('&', '', $lowerKey);
+            $lowerKey = str_replace('&', '-', $lowerKey);
             $lowerKey = trim($lowerKey);
             $lowerKey = str_replace(' ', '-', $lowerKey);
             $categoriesList[$label] = $categories[$lowerKey] ?? 0;
@@ -118,7 +137,8 @@ class Blogmain extends Controller
             'popularPosts' => $popularPosts,
             'categories' => $categories,
             'categoriesList' => $categoriesList,
-            'category' => request()->get('category')
+            'defaultCategories' => $this->defaultCategories,
+            'category' => $getcategory
         ]);
     }
 
@@ -182,13 +202,26 @@ class Blogmain extends Controller
                 'unique' => PostView::uniqueViews($post->id) ?? 0,
             ];
 
+            if (is_array($post->table_of_contents)) {
+                $tocData = $post->table_of_contents;
+            } elseif (is_string($post->table_of_contents) && !empty($post->table_of_contents)) {
+                $tocData = json_decode($post->table_of_contents, true) ?? [];
+            } else {
+                $tocData = [];
+            }
+            $wordCount = str_word_count(strip_tags($post->description));
+            $readingTime = (int) preg_replace('/[^0-9]/', '', $post->reading_time ?? ceil($wordCount / 200));
+
             return view('main.readmore', compact(
                 'post',
                 'images',
                 'relatedPosts',
                 'popularPosts',
                 'comments',
-                'viewStats'
+                'viewStats',
+                'tocData',
+                'readingTime',
+                'wordCount'
             ));
         } catch (\Exception $e) {
             abort(404, 'Post not found');
@@ -200,12 +233,8 @@ class Blogmain extends Controller
      */
     private function trackView($post)
     {
-        //         ini_set('display_errors', 1);
-        // ini_set('display_startup_errors', 1);
-        // error_reporting(E_ALL);
         $ipAddress = request()->ip();
         $sessionId = session()->getId();
-        // Check if already viewed today
         if (!PostView::hasViewedToday($post->id, $ipAddress)) {
             PostView::create([
                 'post_id' => $post->id,
@@ -213,9 +242,6 @@ class Blogmain extends Controller
                 'session_id' => $sessionId,
                 'user_agent' => request()->header('User-Agent')
             ]);
-
-            // If you add views_count column, uncomment:
-            // $post->increment('views_count');
         }
     }
 
@@ -250,24 +276,14 @@ class Blogmain extends Controller
      */
     public function byCategory($category)
     {
-        
-        $defaultCategories = [
-            'technology' => 'Technology',
-            'travel' => 'Travel',
-            'life-style' => 'Lifestyle',
-            'digital-trends' => 'Digital Trends',
-            'productivity' => 'Productivity',
-            'tutorials' => 'Tutorials',
-            'news-updates' => 'News & Updates',
-            'stories-experiences' => 'Stories & Experiences',
-            'creativity-inspiration' => 'Creativity & Inspiration'
-        ];
 
-        if (!isset($defaultCategories[$category])) {
+
+
+        if (!isset($this->defaultCategories[$category])) {
             abort(404);
         }
-        
-        $displayName = $defaultCategories[$category];
+
+        $displayName = $this->defaultCategories[$category];
         // $category = $defaultCategories[$category];
         $posts = newpost_details::published()
             ->where('category', $category)
@@ -275,9 +291,115 @@ class Blogmain extends Controller
             ->paginate(10);
 
         return view('categories.showPage', [
-        'posts' => $posts,
-        'categoryName' => $displayName, 
-        'categorySlug' => $category 
-    ]);
+            'posts' => $posts ?? [],
+            'categoryName' => $displayName,
+            'categorySlug' => $category
+        ]);
+    }
+
+    public function categories()
+    {
+        $categories = [
+            [
+                'name' => 'Technology',
+                'post_count' => newpost_details::where('category', 'technology')->count(),
+                'description' => 'Latest tech news, gadgets, programming, and digital innovations',
+                'reading_time' => '7',
+                'slug' => 'technology',
+                'icon' => 'laptop-code', // Font Awesome icon class
+                'icon_bg' => 'bg-blue-100',
+                'icon_color' => 'text-blue-600'
+            ],
+            [
+                'name' => 'Travel',
+                'post_count' => newpost_details::where('category', 'travel')->count(),
+                'description' => 'Travel guides, destination tips, and adventure stories',
+                'reading_time' => '8',
+                'slug' => 'travel',
+                'icon' => 'plane', // Font Awesome icon class
+                'icon_bg' => 'bg-green-100',
+                'icon_color' => 'text-green-600'
+            ],
+            [
+                'name' => 'Lifestyle',
+                'post_count' => newpost_details::where('category', 'lifestyle')->count(),
+                'description' => 'Daily life, wellness, habits, and personal development',
+                'reading_time' => '6',
+                'slug' => 'life-style',
+                'icon' => 'heart', // Font Awesome icon class
+                'icon_bg' => 'bg-purple-100',
+                'icon_color' => 'text-purple-600'
+            ],
+            [
+                'name' => 'Digital Trends',
+                'post_count' => newpost_details::where('category', 'digital-trends')->count(),
+                'description' => 'Latest digital marketing, social media, and online trends',
+                'reading_time' => '5',
+                'slug' => 'digital-trends',
+                'icon' => 'chart-line', // Font Awesome icon class
+                'icon_bg' => 'bg-indigo-100',
+                'icon_color' => 'text-indigo-600'
+            ],
+            [
+                'name' => 'Productivity',
+                'post_count' => newpost_details::where('category', 'productivity')->count(),
+                'description' => 'Time management, efficiency tips, and work optimization',
+                'reading_time' => '6',
+                'slug' => 'productivity',
+                'icon' => 'check-double',
+                'icon_bg' => 'bg-amber-100',
+                'icon_color' => 'text-amber-600'
+            ],
+            [
+                'name' => 'Tutorials',
+                'post_count' => newpost_details::where('category', 'tutorials')->count(),
+                'description' => 'Step-by-step guides and how-to articles',
+                'reading_time' => '10',
+                'slug' => 'tutorials',
+                'icon' => 'graduation-cap',
+                'icon_bg' => 'bg-emerald-100',
+                'icon_color' => 'text-emerald-600'
+            ],
+            [
+                'name' => 'News & Updates',
+                'post_count' => newpost_details::where('category', 'news-updates')->count(),
+                'description' => 'Latest news, announcements, and updates',
+                'reading_time' => '4',
+                'slug' => 'news-updates',
+                'icon' => 'newspaper',
+                'icon_bg' => 'bg-red-100',
+                'icon_color' => 'text-red-600'
+            ],
+            [
+                'name' => 'Stories & Experiences',
+                'post_count' => newpost_details::where('category', 'stories-experiences')->count(),
+                'description' => 'Personal stories, experiences, and narratives',
+                'reading_time' => '9',
+                'slug' => 'stories-experiences',
+                'icon' => 'book-open',
+                'icon_bg' => 'bg-pink-100',
+                'icon_color' => 'text-pink-600'
+            ],
+            [
+                'name' => 'Creativity & Inspiration',
+                'post_count' => newpost_details::where('category', 'creativity-inspiration')->count(),
+                'description' => 'Creative ideas, inspiration, and artistic content',
+                'reading_time' => '7',
+                'slug' => 'creativity-inspiration',
+                'icon' => 'lightbulb',
+                'icon_bg' => 'bg-cyan-100',
+                'icon_color' => 'text-cyan-600'
+            ],
+        ];
+
+        $featuredCategories = array_slice($categories, 0, 4);
+
+        return view('categories.categoryPage', [
+            'categories' => $categories,
+            'featuredCategories' => $featuredCategories,
+            'totalPosts' => newpost_details::count(),
+            'totalAuthors' => 1,
+            'totalViews' =>  PostView::totalViews(null),
+        ]);
     }
 }

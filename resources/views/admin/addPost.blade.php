@@ -87,8 +87,7 @@
                             <div class="slug-field">
                                 <span class="slug-prefix">/</span>
                                 <input class="form-control slug-input" name="slug" type="text" maxlength="100"
-                                    placeholder="url-friendly-slug" aria-label="Post slug"
-                                    id="postSlug">
+                                    placeholder="url-friendly-slug" aria-label="Post slug" id="postSlug">
                                 <button type="button" class="slug-generate" id="generateSlugBtn">
                                     Generate
                                 </button>
@@ -121,6 +120,70 @@
                     <div class="d-flex mb-3">
                         <div style="width: 150px; flex-shrink: 0;">
                             <label class="form-label">
+                                <i class="fas fa-list-ol me-2"></i>Table of Contents
+                            </label>
+                        </div>
+                        <div style="flex: 1; max-width: 600px;">
+                            <div class="mb-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm mb-2" id="generateTOCBtn">
+                                    <i class="fas fa-magic me-1"></i> Auto-generate from Headings
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm mb-2" id="resetTOCBtn">
+                                    <i class="fas fa-redo me-1"></i> Reset
+                                </button>
+                                <p class="small text-muted mb-0">Will auto-generate from ##, ### headings in your
+                                    content</p>
+                            </div>
+
+                            <!-- TOC Preview -->
+                            <div class="card mb-3" id="tocPreviewCard" style="display: none;">
+                                <div class="card-header bg-light py-2">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-list me-1"></i> TOC Preview
+                                        <span id="tocSectionCount" class="badge bg-primary ms-2">0 sections</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body p-3">
+                                    <ul id="tocPreviewList" class="list-unstyled mb-0">
+                                        <!-- TOC items will appear here -->
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Hidden fields to store data -->
+                            <input type="hidden" name="table_of_contents" id="tableOfContents">
+                            <input type="hidden" name="reading_time" id="readingTime">
+                            <input type="hidden" name="word_count" id="wordCount">
+
+                            <!-- Stats -->
+                            <div class="row g-2 mt-3" id="tocStats" style="display: none;">
+                                <div class="col-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <div class="small text-muted">Sections</div>
+                                        <div class="h5 mb-0" id="statSections">0</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <div class="small text-muted">Words</div>
+                                        <div class="h5 mb-0" id="statWords">0</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <div class="small text-muted">Read Time</div>
+                                        <div class="h5 mb-0" id="statReadTime">0 min</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="d-flex mb-3">
+                        <div style="width: 150px; flex-shrink: 0;">
+                            <label class="form-label">
                                 <i class="fas fa-image me-2"></i>Featured Image
                             </label>
                         </div>
@@ -141,7 +204,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 @php
                     $categories = [
                         'travel' => 'Travel',
@@ -154,19 +217,60 @@
                         'stories-experiences' => 'Stories & Experiences',
                         'creativity-inspiration' => 'Creativity & Inspiration',
                     ];
-                    
+
                     $commonTags = [
-                        'AI', 'Machine Learning', 'Web Development', 'Travel', 'Lifestyle',
-                        'Productivity', 'Digital Marketing', 'Programming', 'Design',
-                        'Photography', 'Business', 'Health', 'Finance', 'Education',
-                        'Technology', 'Innovation', 'Startup', 'Mobile', 'Cloud',
-                        'Blockchain', 'Cryptocurrency', 'Web3', 'IoT', 'Cybersecurity',
-                        'Data Science', 'Analytics', 'UX/UI', 'Frontend', 'Backend',
-                        'Laravel', 'PHP', 'JavaScript', 'Python', 'React', 'Vue',
-                        'Node.js', 'API', 'DevOps', 'Agile', 'Remote Work',
-                        'Digital Nomad', 'Mindfulness', 'Meditation', 'Wellness',
-                        'Fitness', 'Nutrition', 'Mental Health', 'Self Improvement',
-                        'Career Growth', 'Leadership', 'Management', 'Entrepreneurship'
+                        'AI',
+                        'Machine Learning',
+                        'Web Development',
+                        'Travel',
+                        'Lifestyle',
+                        'Productivity',
+                        'Digital Marketing',
+                        'Programming',
+                        'Design',
+                        'Photography',
+                        'Business',
+                        'Health',
+                        'Finance',
+                        'Education',
+                        'Technology',
+                        'Innovation',
+                        'Startup',
+                        'Mobile',
+                        'Cloud',
+                        'Blockchain',
+                        'Cryptocurrency',
+                        'Web3',
+                        'IoT',
+                        'Cybersecurity',
+                        'Data Science',
+                        'Analytics',
+                        'UX/UI',
+                        'Frontend',
+                        'Backend',
+                        'Laravel',
+                        'PHP',
+                        'JavaScript',
+                        'Python',
+                        'React',
+                        'Vue',
+                        'Node.js',
+                        'API',
+                        'DevOps',
+                        'Agile',
+                        'Remote Work',
+                        'Digital Nomad',
+                        'Mindfulness',
+                        'Meditation',
+                        'Wellness',
+                        'Fitness',
+                        'Nutrition',
+                        'Mental Health',
+                        'Self Improvement',
+                        'Career Growth',
+                        'Leadership',
+                        'Management',
+                        'Entrepreneurship',
                     ];
                 @endphp
 
@@ -184,16 +288,17 @@
                                         <label class="form-label">Category</label>
                                         <select class="form-control" name="category" id="categorySelect">
                                             <option value="">Select Category</option>
-                                           @foreach ($categories as $key => $value)
-                                            <option value="{{ $key }}">{{ $value }}</option>                                               
-                                           @endforeach
+                                            @foreach ($categories as $key => $value)
+                                                <option value="{{ $key }}">{{ $value }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Tags</label>
-                                        <select class="form-control" name="tags[]" id="tagsSelect" multiple="multiple">
+                                        <select class="form-control" name="tags[]" id="tagsSelect"
+                                            multiple="multiple">
                                             @foreach ($commonTags as $tag)
                                                 <option value="{{ $tag }}">{{ $tag }}</option>
                                             @endforeach
@@ -202,13 +307,13 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="admin-form-row">
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Meta Title</label>
-                                        <input type="text" class="form-control" name="meta_title" 
-                                               placeholder="SEO meta title" maxlength="60">
+                                        <input type="text" class="form-control" name="meta_title"
+                                            placeholder="SEO meta title" maxlength="60">
                                         <div class="character-count">
                                             <span id="metaTitleCount">0</span>/60 characters
                                         </div>
@@ -217,17 +322,18 @@
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Meta Description</label>
-                                        <textarea class="form-control" name="meta_description" rows="2"
-                                                  placeholder="SEO meta description" maxlength="160"></textarea>
+                                        <textarea class="form-control" name="meta_description" rows="2" placeholder="SEO meta description"
+                                            maxlength="160"></textarea>
                                         <div class="character-count">
                                             <span id="metaDescCount">0</span>/160 characters
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="featuredPost" name="featured" value="1">
+                                <input class="form-check-input" type="checkbox" id="featuredPost" name="featured"
+                                    value="1">
                                 <label class="form-check-label" for="featuredPost">
                                     Mark as featured post
                                 </label>
