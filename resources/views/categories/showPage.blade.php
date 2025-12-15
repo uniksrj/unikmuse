@@ -54,6 +54,15 @@
     </script>
     @endif
 
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ $categoryName }} Articles",
+  "url": "{{ url()->current() }}"
+}
+</script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -104,7 +113,18 @@
     <div class="progress-bar" id="readingProgress"></div>
 
     @include('common.header')
+    {{-- <div class="bg-white border-b border-unik-border">
+        <div class="container-unik py-4">
 
+            <x-breadcrumbs :items="[
+                ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+                ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+                ['label' => $categoryName, 'url' => null, 'icon' => 'fa-tag'],
+            ]" />
+
+        </div>
+    </div> --}}
     <main class="container-unik py-8 md:py-12">
         <!-- Category Hero Section -->
         <section class="mb-12 fade-in">
@@ -159,7 +179,7 @@
                     </div>
 
                     <!-- Breadcrumb -->
-                    <nav class="text-sm opacity-80" aria-label="Breadcrumb">
+                    {{-- <nav class="text-sm opacity-80" aria-label="Breadcrumb">
                         <ol class="flex justify-center items-center space-x-2">
                             <li><a href="/" class="hover:text-white transition-colors">Home</a></li>
                             <li><i class="fas fa-chevron-right text-xs"></i></li>
@@ -167,7 +187,7 @@
                             <li><i class="fas fa-chevron-right text-xs"></i></li>
                             <li class="font-medium" aria-current="page">{{ $categoryName ?? 'Category' }}</li>
                         </ol>
-                    </nav>
+                    </nav> --}}
                 </div>
             </div>
         </section>
@@ -325,17 +345,13 @@
                                         </h3>
 
                                         <p class="text-unik-muted mb-4 text-sm leading-relaxed">
-                                            
+
                                             {{ Str::limit(
-                                        strip_tags(
-                                            str_replace(
-                                                ['## ', '### ', '#### ', '##', '###', '####'],
-                                                '',
-                                                $post->excerpt ?? ($post->description ?? ''),
-                                            ),
-                                        ),
-                                        120,
-                                    ) }}
+                                                strip_tags(
+                                                    str_replace(['## ', '### ', '#### ', '##', '###', '####'], '', $post->excerpt ?? ($post->description ?? '')),
+                                                ),
+                                                120,
+                                            ) }}
                                         </p>
 
                                         <div

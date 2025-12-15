@@ -57,7 +57,15 @@
 
 <body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
-
+    @php
+        $breadcrumbs = [
+            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+            ['label' => $categoryName ?? 'Category', 'url' => url('/categories/' . "travel"), 'icon' => 'fa-tag'],
+            ['label' => $post->title ?? 'Post', 'icon' => 'fa-newspaper'],
+        ];
+    @endphp
     <!-- Reading Progress Bar -->
     <div class="fixed top-0 left-0 w-full h-1 bg-unik-primary/20 z-50">
         <div class="h-full bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent" id="readingProgress"
@@ -164,8 +172,7 @@
                     @endphp
 
                     <div class="mb-12">
-                        <article
-                            class="prose prose-lg max-w-none bg-white md:p-8 content-body">
+                        <article class="prose prose-lg max-w-none bg-white md:p-8 content-body">
                             {!! (new Parsedown())->text($post->description ?? '') !!}
                         </article>
                     </div>

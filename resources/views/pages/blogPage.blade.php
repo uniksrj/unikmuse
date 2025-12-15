@@ -35,13 +35,17 @@
 
     <title>Unik Muse Blog – Insights, Stories, Trends & Expert Opinions</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @vite('resources/css/blog.js')
 </head>
 
 <body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
-
+    @php
+        $breadcrumbs = [
+            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+        ];
+    @endphp
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-16 md:py-24">
         <div class="container-unik text-center">
@@ -218,7 +222,8 @@
                                     <a href="{{ $posts->previousPageUrl() }}" rel="prev"
                                         aria-label="Previous Page"
                                         class="px-4 py-2 rounded-unik-md border border-unik-border bg-white text-unik-primary hover:bg-unik-primary hover:text-white transition-colors duration-300">
-                                        <i class="fas fa-chevron-left mr-1 text-unik-muted"></i> <span class="text-unik-muted">Previous</span>
+                                        <i class="fas fa-chevron-left mr-1 text-unik-muted"></i> <span
+                                            class="text-unik-muted">Previous</span>
                                     </a>
                                 @endif
 

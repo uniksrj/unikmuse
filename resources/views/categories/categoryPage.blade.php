@@ -15,24 +15,14 @@
 <body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
 
-    <!-- Breadcrumbs -->
-    <div class="bg-white border-b border-unik-border">
-        <div class="container-unik py-4">
-            <nav class="flex items-center text-sm" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2">
-                    <li>
-                        <a href="/" class="text-unik-primary hover:text-unik-secondary transition-colors">
-                            <i class="fas fa-home mr-1"></i> Home
-                        </a>
-                    </li>
-                    <li class="flex items-center">
-                        <i class="fas fa-chevron-right text-unik-muted text-xs mx-2"></i>
-                        <span class="text-unik-muted font-medium">Categories</span>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-    </div>
+    @php
+        $breadcrumbs = [
+            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+            ['label' => $categoryName ?? 'Category', 'icon' => 'fa-tag'],
+        ];
+    @endphp
 
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-12 md:py-16">
