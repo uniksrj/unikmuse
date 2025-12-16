@@ -37,7 +37,7 @@ Route::delete('/delete_data/{id}', [Admin::class, 'delete_data']);
 Route::get('/blog', [Blogmain::class, 'index'])->name('blog.index');
 Route::get('/posts/{id}', [Blogmain::class, 'show'])->name('post.show');
 Route::post('/posts/{id}/comment', [Blogmain::class, 'storeComment'])->name('post.comment');
-Route::get('/category/{category}', [Blogmain::class, 'byCategory'])->name('blog.category');
+// Route::get('/category/{category}', [Blogmain::class, 'byCategory'])->name('blog.category');
 
 Route::view('/about', 'pages.about')->name('about');
 Route::view('/contact', 'pages.contactUs')->name('contact');

@@ -153,7 +153,8 @@ class Blogmain extends Controller
     public function getData($query = null)
     {
         $posts = DB::table('newpost_details')
-            ->select('*');
+            ->select('*')
+            ->limit(6);
 
         if (!empty($query)) {
             $posts->where(function ($q) use ($query) {
@@ -211,7 +212,7 @@ class Blogmain extends Controller
             }
             $wordCount = str_word_count(strip_tags($post->description));
             $readingTime = (int) preg_replace('/[^0-9]/', '', $post->reading_time ?? ceil($wordCount / 200));
-
+            
             return view('main.readmore', compact(
                 'post',
                 'images',

@@ -9,7 +9,7 @@
         content="Explore all content categories including Technology, Travel, Lifestyle, News, Productivity, and more. Find articles by topic.">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> --}}
 </head>
 
 <body class="bg-unik-light text-unik-dark font-sans">

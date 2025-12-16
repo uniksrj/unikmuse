@@ -38,14 +38,9 @@
     @vite('resources/css/blog.js')
 </head>
 
-<body class="bg-unik-light text-unik-dark font-sans">
+<body class="bg-unik-light text-unik-dark font-sans">    
     @include('common.header')
-    @php
-        $breadcrumbs = [
-            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
-            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
-        ];
-    @endphp
+
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-16 md:py-24">
         <div class="container-unik text-center">

@@ -135,6 +135,18 @@
         font-display: swap;
     }
 
+    @font-face {
+        font-family: "Font Awesome 6 Free";
+        src: url('public/fontawesome/webfonts/fa-solid-900.woff2') format('woff2'),
+             url('public/fontawesome/webfonts/fa-solid-900.woff') format('woff');
+        font-display: swap;
+    }
+
+    /* @font-face {
+        font-family: "Font Awesome 6 Brands";
+        font-display: swap;
+    } */
+
     html {
         @apply scroll-smooth antialiased;
         font-family: 'Inter', sans-serif;
@@ -191,7 +203,7 @@
     }
 
     a:hover {
-        color: var(--unik-light) !important;
+        color: #0013a0 !important;
     }
 
     /* Specific link styles for different contexts */

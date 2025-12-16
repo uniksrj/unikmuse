@@ -1,5 +1,5 @@
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> --}}
+<link rel="stylesheet" href="{{ asset('fontawesome/css/all.min.css') }}">
 <header class="blog-header bg-unik-primary text-white shadow-unik-lg" role="banner">
     <nav class="navbar container-unik mx-auto px-4" role="navigation" aria-label="Main Navigation">
         <!-- Logo -->
@@ -62,7 +62,7 @@
 
             <!-- Categories Dropdown with fixed hover -->
             <li class="dropdown relative group">
-                <a href="javascript:void(0)"
+                <a href="{{ url('/categories') }}"
                     class="dropdown-toggle_box nav-link block text-white hover:text-unik-light transition-colors py-3 px-4 rounded-unik-md hover:bg-white/10 md:inline-block md:py-2 flex items-center justify-between md:justify-start gap-2"
                     id="dropdown-cat">
                     Categories <i class="fas fa-chevron-down text-sm"></i>
@@ -123,23 +123,26 @@
         });
     </script>
 </header>
-@if(!empty($breadcrumbs))
-    <div class="bg-white border-b border-unik-border">
-        <div class="container-unik py-4 flex items-center space-x-2 text-sm">
-            @foreach($breadcrumbs as $crumb)
-                <a href="{{ $crumb['url'] ?? 'javascript:void(0)' }}" class="flex items-center text-unik-primary hover:text-unik-secondary transition-colors">
-                    <i class="fas {{ $crumb['icon'] ?? 'fa-circle' }} mr-1"></i> {{ $crumb['label'] }}
-                </a>
-                @if (!$loop->last)
-                    <i class="fas fa-chevron-right text-unik-muted text-xs mx-2"></i>
-                @endif
-            @endforeach
+@if (!empty($breadcrumbs))
+    <nav aria-label="Breadcrumb">
+        <div class="bg-white border-b border-unik-border">
+            <div class="container-unik py-4 flex items-center space-x-2 text-sm">
+                @foreach ($breadcrumbs as $crumb)
+                    <a href="{{ $crumb['url'] ?? 'javascript:void(0)' }}"
+                        class="flex items-center text-unik-primary hover:text-[#424242] transition-colors">
+                        <i class="fas {{ $crumb['icon'] ?? 'fa-circle' }} mr-1"></i> {{ $crumb['label'] }}
+                    </a>
+                    @if (!$loop->last)
+                        <i class="fas fa-chevron-right text-unik-muted text-xs mx-2"></i>
+                    @endif
+                @endforeach
+            </div>
         </div>
-    </div>
+    </nav>
 @endif
 
-@if(!empty($breadcrumbs))
-<script type="application/ld+json">
+@if (!empty($breadcrumbs))
+    <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",

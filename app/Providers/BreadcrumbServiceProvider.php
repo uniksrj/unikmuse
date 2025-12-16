@@ -2,12 +2,25 @@
 
 namespace App\Providers;
 
+use App\Models\newpost_details;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Route;
 
 class BreadcrumbServiceProvider extends ServiceProvider
 {
+
+    private $categoryMap = [
+        'technology' => ['label' => 'Technology', 'icon' => 'fa-microchip'],
+        'travel' => ['label' => 'Travel', 'icon' => 'fa-plane'],
+        'life-style' => ['label' => 'Lifestyle', 'icon' => 'fa-leaf'],
+        'digital-trends' => ['label' => 'Digital Trends', 'icon' => 'fa-chart-line'],
+        'productivity' => ['label' => 'Productivity', 'icon' => 'fa-bolt'],
+        'tutorials' => ['label' => 'Tutorials', 'icon' => 'fa-book-open'],
+        'news-updates' => ['label' => 'News & Updates', 'icon' => 'fa-newspaper'],
+        'stories-experiences' => ['label' => 'Stories & Experiences', 'icon' => 'fa-feather'],
+        'creativity-inspiration' => ['label' => 'Creativity & Inspiration', 'icon' => 'fa-lightbulb'],
+    ];
     /**
      * Register services.
      */
@@ -28,35 +41,39 @@ class BreadcrumbServiceProvider extends ServiceProvider
             switch ($route) {
                 case 'blog.index':
                     $breadcrumbs = [
-                        ['label' => 'Home', 'url' => url('/')],
-                        ['label' => 'Blog'],
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
                     ];
                     break;
 
                 case 'categories.index':
                     $breadcrumbs = [
-                        ['label' => 'Home', 'url' => url('/')],
-                        ['label' => 'Categories'],
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+                        ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
                     ];
                     break;
 
-                case 'categories.show':
-                    if ($category = request()->route('slug')) {
+                case 'category.show':
+                    if ($category = request()->route('categorySlug')) {
                         $breadcrumbs = [
-                            ['label' => 'Home', 'url' => url('/')],
-                            ['label' => 'Blog', 'url' => url('/blog')],
-                            ['label' => 'Categories', 'url' => url('/categories')],
-                            ['label' => ucwords(str_replace('-', ' ', $category))],
+                            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+                            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+                            $this->categoryMap[$category] ?? ['label' => ucwords(str_replace('-', ' ', $category)), 'icon' => 'fa-tag']                       
                         ];
                     }
                     break;
 
                 case 'post.show':
-                    if ($post = request()->route('id')) {
+                    if ($post_id = request()->route('id')) {
+                        $post = newpost_details::where('id', $post_id)->first();
                         $breadcrumbs = [
-                            ['label' => 'Home', 'url' => url('/')],
-                            ['label' => 'Blog', 'url' => url('/blog')],
-                            ['label' => 'Post'],
+                            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+                            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+                            $this->categoryMap[$post->category] ?? ['label' => ucwords(str_replace('-', ' ', $post->category)), 'icon' => 'fa-tag'] ,
+                            ['label' => $post->title, 'icon' => 'fa-file-alt'],
                         ];
                     }
                     break;

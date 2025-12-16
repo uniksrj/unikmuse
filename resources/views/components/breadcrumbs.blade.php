@@ -1,5 +1,5 @@
 @props([
-    'items' => [] // [['label' => '', 'url' => null, 'icon' => '']]
+    'items' => [] 
 ])
 <nav aria-label="Breadcrumb" class="text-sm">
     <ol class="flex items-center flex-wrap">
