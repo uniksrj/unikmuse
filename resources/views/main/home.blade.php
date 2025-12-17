@@ -63,101 +63,100 @@
 
             <!-- Featured Cards Grid -->
             <div class="featured-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Card 1 - Travel -->
+                
                 <article
                     class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
                     <div class="border-l-4 border-l-unik-primary p-6 flex-grow">
                         <div class="featured-icon w-12 h-12 bg-unik-primary/10 rounded-unik-md flex items-center justify-center mb-4"
                             aria-hidden="true">
-                            <i class="fas fa-compass text-unik-primary text-xl"></i>
+                            <i class="fas fa-laptop-code text-unik-primary text-xl"></i>
                         </div>
 
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Travel Guides</h3>
+                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Tech & Innovation</h3>
                         <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Expert travel tips, destination guides, itineraries, and cultural insights
-                            to help you plan your next adventure.
+                            Latest technology trends, software insights, innovation news, and digital transformation
+                            topics.
                         </p>
 
                         <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/guides"
-                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="Explore detailed travel guides, tips, and destinations">
-                                Explore Guides <i class="fas fa-arrow-right ml-2"></i>
+                            <a href="/tech" disabled
+                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm cursor-not-allowed"
+                                title="Read tech articles and innovation news">
+                                Explore Tech <i class="fas fa-arrow-right ml-2"></i>
                             </a>
                         </div>
                     </div>
                 </article>
 
-                <!-- Card 2 - Inspiration -->
+                <!-- Card 2 - News & Updates -->
                 <article
                     class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
                     <div class="border-l-4 border-l-unik-secondary p-6 flex-grow">
                         <div class="featured-icon w-12 h-12 bg-unik-secondary/10 rounded-unik-md flex items-center justify-center mb-4"
                             aria-hidden="true">
-                            <i class="fas fa-lightbulb text-unik-secondary text-xl"></i>
+                            <i class="fas fa-newspaper text-unik-secondary text-xl"></i>
                         </div>
 
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Inspiration</h3>
+                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">News & Updates</h3>
                         <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Thought-provoking articles, stories, and ideas designed to spark creativity
-                            and motivate personal growth.
+                            Current affairs, important updates, and trending news across various industries and topics.
                         </p>
 
                         <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/inspiration"
+                            <a href="/news" disabled
                                 class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="Read inspiring articles and creative ideas">
+                                title="Stay updated with latest news">
+                                Read News <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 - Motivation & Growth -->
+                <article
+                    class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
+                    <div class="border-l-4 border-l-unik-accent p-6 flex-grow">
+                        <div class="featured-icon w-12 h-12 bg-unik-accent/10 rounded-unik-md flex items-center justify-center mb-4"
+                            aria-hidden="true">
+                            <i class="fas fa-brain text-unik-accent text-xl"></i>
+                        </div>
+
+                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Motivation & Growth</h3>
+                        <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
+                            Personal development, mindset tips, productivity hacks, and inspirational content for
+                            self-improvement.
+                        </p>
+
+                        <div class="mt-auto pt-4 absolute bottom-6">
+                            <a href="/motivation" disabled
+                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
+                                title="Find motivation and personal growth tips">
                                 Get Inspired <i class="fas fa-arrow-right ml-2"></i>
                             </a>
                         </div>
                     </div>
                 </article>
 
-                <!-- Card 3 - Photo Stories -->
-                <article
-                    class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
-                    <div class="border-l-4 border-l-unik-accent p-6 flex-grow">
-                        <div class="featured-icon w-12 h-12 bg-unik-accent/10 rounded-unik-md flex items-center justify-center mb-4"
-                            aria-hidden="true">
-                            <i class="fas fa-camera text-unik-accent text-xl"></i>
-                        </div>
-
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Photo Stories</h3>
-                        <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Visual storytelling through stunning photography paired with deep,
-                            narrative-driven experiences.
-                        </p>
-
-                        <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/photo-stories"
-                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="View photo stories and visual narratives">
-                                View Stories <i class="fas fa-arrow-right ml-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Card 4 - Collections -->
+                <!-- Card 4 - Lifestyle & More -->
                 <article
                     class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
                     <div class="border-l-4 border-l-unik-light p-6 flex-grow">
                         <div class="featured-icon w-12 h-12 bg-unik-light/20 rounded-unik-md flex items-center justify-center mb-4"
                             aria-hidden="true">
-                            <i class="fas fa-book text-unik-secondary text-xl"></i>
+                            <i class="fas fa-globe text-unik-secondary text-xl"></i>
                         </div>
 
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Collections</h3>
+                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Lifestyle & More</h3>
                         <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Curated collections of our most popular, evergreen, and timeless content
-                            organized for easy reading.
+                            Lifestyle tips, health, entertainment, and diverse topics that don't fit into other
+                            categories.
                         </p>
 
                         <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/collections"
+                            <a href="/lifestyle" disabled
                                 class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="Browse curated content collections">
-                                Browse All <i class="fas fa-arrow-right ml-2"></i>
+                                title="Explore lifestyle and various topics">
+                                Browse More <i class="fas fa-arrow-right ml-2"></i>
                             </a>
                         </div>
                     </div>

@@ -35,7 +35,7 @@
 
     <title>Unik Muse Blog – Insights, Stories, Trends & Expert Opinions</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @vite('resources/css/blog.js')
+    @vite('resources/js/blog.js')
 </head>
 
 <body class="bg-unik-light text-unik-dark font-sans">    

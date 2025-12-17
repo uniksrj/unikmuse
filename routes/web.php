@@ -59,3 +59,15 @@ Route::get('/category/{categorySlug}', [Blogmain::class, 'byCategory'])
 // })->name('category');
 
 Route::get('/categories', [Blogmain::class, 'categories'])->name('categories.index');
+
+Route::get('/privacy-policy', function () {
+    return view('pages.privacy-policy');
+})->name('privacy.policy');
+
+Route::get('/terms-conditions', function () {
+    return view('pages.terms-conditions');
+})->name('terms.conditions');
+
+Route::get('/disclaimer', function () {
+    return view('pages.disclaimer');
+})->name('disclaimer');

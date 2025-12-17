@@ -1,9 +1,9 @@
 import $ from 'jquery';
 
-const slide = document.querySelector('.carousel-slide');
-const caption = slide.querySelector('.carousel-caption');
+const slide = document.querySelector('.carousel-slide') ? document.querySelector('.carousel-slide') : null;
+const caption = slide ? slide.querySelector('.carousel-caption') : null;
 
-const images = document.querySelectorAll('img[loading="lazy"]');
+const images = document.querySelectorAll('img[loading="lazy"]') ? document.querySelectorAll('img[loading="lazy"]') : [];
 function showSlide(index) {
     slide.querySelector('img').setAttribute('src', slides[index].image);
     caption.querySelector('h3').textContent = slides[index].title;

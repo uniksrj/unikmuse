@@ -11,7 +11,8 @@
             </a>
         </div>
 
-        <!-- Search Bar - Hidden on mobile -->
+        <!-- Search Bar - Visible on Home Page Only -->
+        @if(request()->is('/'))
         <div class="search-container flex-grow mx-4 hidden md:block">
             <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
                 onsubmit="encodeSearch()">
@@ -20,12 +21,13 @@
                     <input id="search-input" type="text" name="q" placeholder="Search articles..." required
                         class="w-full rounded-unik-lg px-4 py-2 border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
                     <button type="submit"
-                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-unik-secondary text-white px-4 py-1 rounded-unik-md hover:bg-unik-secondary/90 transition-colors">
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-unik-secondary text-white px-4 py-1 rounded-unik-md hover:bg-unik-secondary/90 transition-colors" aria-label="Search">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
             </form>
         </div>
+        @endif
         <!-- Hamburger Menu for Mobile -->
         <div class="hamburger md:hidden" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false"
             role="button" aria-controls="nav-links" tabindex="0">

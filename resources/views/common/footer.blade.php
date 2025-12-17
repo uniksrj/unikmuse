@@ -48,11 +48,11 @@
             <div class="footer-section social">
                 <h2 class="text-xl font-bold text-unik-light mb-4">Follow Us</h2>
                 <div class="social-icons flex gap-4">
-                    <a href="#" target="_blank"
+                    <a href="https://facebook.com/" target="_blank" aria-label="Follow us on Facebook"
                         class="w-10 h-10 bg-white/10 hover:bg-unik-secondary rounded-full flex items-center justify-center transition-colors">
                         <i class="fab fa-facebook-f text-white"></i>
                     </a>
-                    <a href="#" target="_blank"
+                    <a href="https://instagram.com/" target="_blank" aria-label="Follow us on Instagram"
                         class="w-10 h-10 bg-white/10 hover:bg-unik-accent rounded-full flex items-center justify-center transition-colors">
                         <i class="fab fa-instagram text-white"></i>
                     </a>
@@ -87,7 +87,7 @@
                     class="text-white/80 hover:text-unik-light hover:underline text-sm transition-colors">Privacy
                     Policy</a>
                 <span class="text-white/50">•</span>
-                <a href="{{ url('/terms') }}"
+                <a href="{{ url('/terms-conditions') }}"
                     class="text-white/80 hover:text-unik-light hover:underline text-sm transition-colors">Terms &
                     Conditions</a>
                 <span class="text-white/50">•</span>
