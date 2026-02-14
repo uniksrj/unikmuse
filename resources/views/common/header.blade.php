@@ -12,31 +12,32 @@
         </div>
 
         <!-- Search Bar - Visible on Home Page Only -->
-        @if(request()->is('/'))
-        <div class="search-container flex-grow mx-4 hidden md:block">
-            <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
-                onsubmit="encodeSearch()">
-                <label for="search-input" class="visually-hidden">Search Blog</label>
-                <div class="relative w-full">
-                    <input id="search-input" type="text" name="q" placeholder="Search articles..." required
-                        class="w-full rounded-unik-lg px-4 py-2 hidden md:block border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
-                    <button type="submit"
-                        class="bg-[#4E56C0] absolute hidden md:block right-2 top-1/2 transform-translate-y-1/2 text-white px-4 py-1 rounded-lg transition-colors" aria-label="Search">
-                        <i class="fas fa-search hover:text-unik-accent"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
+        @if (request()->is('/'))
+            <div class="search-container flex-grow mx-4 hidden md:block">
+                <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
+                    onsubmit="encodeSearch()">
+                    <label for="search-input" class="visually-hidden">Search Blog</label>
+                    <div class="relative w-full">
+                        <input id="search-input" type="text" name="q" placeholder="Search articles..." required
+                            class="w-full rounded-unik-lg px-4 py-2 hidden md:block border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
+                        <button type="submit"
+                            class="bg-[#4E56C0] absolute hidden md:block right-2 top-1/2 transform-translate-y-1/2 text-white px-4 py-1 rounded-lg transition-colors"
+                            aria-label="Search">
+                            <i class="fas fa-search hover:text-unik-accent"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
         @endif
         <!-- Hamburger Menu for Mobile -->
-        <div class="hamburger md:hidden mx-4" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false"
-            role="button" aria-controls="nav-links" tabindex="0">
+        <div class="hamburger md:hidden mx-4" id="hamburger-btn" aria-label="Toggle navigation menu"
+            aria-expanded="false" role="button" aria-controls="nav-links" tabindex="0">
             <span class="bg-white"></span>
             <span class="bg-white"></span>
             <span class="bg-white"></span>
         </div>
-        
-        <ul class="nav-links mb-0 py-2" id="nav-links">            
+
+        <ul class="nav-links mb-0 py-2" id="nav-links">
             <li class="md:hidden mb-4">
                 <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
                     onsubmit="encodeSearch()">
@@ -68,7 +69,7 @@
                     Categories <i class="fas fa-chevron-down text-sm"></i>
                 </a>
 
-                <ul class="dropdown-menu_category absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
+                <ul id="category-menu" class="dropdown-menu_category relative md:absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 hidden md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
                     aria-label="Submenu">
                     <li><a href="{{ route('category.show', 'technology') }}"
                             class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Technology</a>
@@ -120,6 +121,12 @@
 
         hamburger.addEventListener('click', () => {
             navLinks.classList.toggle('active');
+
+            if (navLinks.classList.contains('active')) {
+                document.body.style.overflow = "hidden";
+            } else {
+                document.body.style.overflow = "auto";
+            }
         });
     </script>
 </header>
