@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\newpost_details;
 use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -173,9 +174,17 @@ class Admin extends Controller
                 'featured' => 'boolean',
                 'meta_title' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:500',
-                'slug' => 'nullable|string|max:255|unique:newpost_details,slug',
+                'slug' => 'nullable|string|max:255',
 
             ]);
+            
+            $isSlugExists = newpost_details::checkSlugExists($validated['slug'], $id);
+            if ($isSlugExists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The slug has already been taken.'
+                ], 422);
+            }
 
             $data = [
                 'title' => $validated['title'],

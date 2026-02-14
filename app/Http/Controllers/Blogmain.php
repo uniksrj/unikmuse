@@ -277,9 +277,6 @@ class Blogmain extends Controller
      */
     public function byCategory($category)
     {
-
-
-
         if (!isset($this->defaultCategories[$category])) {
             abort(404);
         }
@@ -394,13 +391,13 @@ class Blogmain extends Controller
         ];
 
         $featuredCategories = array_slice($categories, 0, 4);
-
         return view('categories.categoryPage', [
             'categories' => $categories,
             'featuredCategories' => $featuredCategories,
             'totalPosts' => newpost_details::count(),
             'totalAuthors' => 1,
             'totalViews' =>  PostView::totalViews(null),
+            'totalViewsByMonth' =>  PostView::totalViewsByMonth( date('m'), date('Y')),
         ]);
     }
 }

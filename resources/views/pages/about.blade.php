@@ -246,7 +246,7 @@
                     articles directly in your inbox.
                 </p>
                 <a href="/subscribe.html"
-                    class="inline-block bg-white text-unik-primary font-semibold px-8 py-4 rounded-unik-lg hover:bg-white/90 hover:-translate-y-1 transition-all duration-300">
+                    class="inline-block bg-black text-unik-primary font-semibold px-8 py-4 rounded-unik-lg hover:-translate-y-1 transition-all duration-300">
                     Subscribe Now
                 </a>
             </div>

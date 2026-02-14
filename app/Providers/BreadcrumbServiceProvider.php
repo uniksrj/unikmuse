@@ -42,7 +42,7 @@ class BreadcrumbServiceProvider extends ServiceProvider
                 case 'blog.index':
                     $breadcrumbs = [
                         ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
-                        ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+                        ['label' => 'Blog', 'icon' => 'fa-blog'],
                     ];
                     break;
 
@@ -50,19 +50,20 @@ class BreadcrumbServiceProvider extends ServiceProvider
                     $breadcrumbs = [
                         ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
                         ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
-                        ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+                        ['label' => 'Categories','icon' => 'fa-folder-open'],
                     ];
                     break;
 
                 case 'category.show':
-                    if ($category = request()->route('categorySlug')) {
+                    
+                    if ($category = request()->route('categorySlug')) {                        
                         $breadcrumbs = [
                             ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
                             ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
                             ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-                            $this->categoryMap[$category] ?? ['label' => ucwords(str_replace('-', ' ', $category)), 'icon' => 'fa-tag']                       
+                            ['label' => $this->categoryMap[$category]['label'],'icon' => $this->categoryMap[$category]['icon']]                       
                         ];
-                    }
+                    }                 
                     break;
 
                 case 'post.show':
@@ -72,7 +73,7 @@ class BreadcrumbServiceProvider extends ServiceProvider
                             ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
                             ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
                             ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-                            $this->categoryMap[$post->category] ?? ['label' => ucwords(str_replace('-', ' ', $post->category)), 'icon' => 'fa-tag'] ,
+                            ['label' =>  $this->categoryMap[$post->category]['label'], 'url' => url('/category'.'/'. $post->category), 'icon' => $this->categoryMap[$post->category]['icon']] ,
                             ['label' => $post->title, 'icon' => 'fa-file-alt'],
                         ];
                     }

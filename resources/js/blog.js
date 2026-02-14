@@ -12,17 +12,17 @@ function showSlide(index) {
 
 let currentSlide = 0;
 const slides = [{
-    image: "https://images.unsplash.com/photo-1526666923127-b2970f64b422?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/snow.webp",
     title: "SateLite View in sunrise",
     text: "Tech is best because it shows us the world in a new way."
 },
 {
-    image: "https://images.unsplash.com/photo-1764555166588-b3cbd7adafae?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/green.webp",
     title: "Sun Makes You Feel Great",
     text: "Jobs fill your pocket, but adventures fill your soul."
 },
 {
-    image: "https://images.unsplash.com/photo-1764957078546-35495d3d2cbb?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "/assets/beach.webp",
     title: "Peace Finds You",
     text: "Twenty years from now you will be more disappointed by the things that you didn't do than by the ones you did do."
 }
@@ -30,19 +30,6 @@ const slides = [{
 
 
 $(document).ready(function () {
-
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.classList.add('loaded');
-                    imageObserver.unobserve(img);
-                }
-            });
-        });
-        images.forEach(img => imageObserver.observe(img));
-    }
 
     setInterval(() => {
         currentSlide = (currentSlide + 1) % slides.length;

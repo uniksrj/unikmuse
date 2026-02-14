@@ -272,4 +272,13 @@ class newpost_details extends Model
     {
         return $this->name;
     }
+
+    public static function checkSlugExists($slug, $id = null)
+    {
+        $query = self::where('slug', $slug);
+        if ($id !== null) {
+            $query->where('id', '!=', $id);
+        }
+        return $query->exists();
+    }
 }

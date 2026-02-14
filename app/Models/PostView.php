@@ -15,6 +15,13 @@ class PostView extends Model
         'session_id'
     ];
 
+    protected $table = 'post_views';
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     /**
      * Get the post that owns the view.
      */
@@ -60,5 +67,12 @@ class PostView extends Model
         return self::where('post_id', $postId)
             ->distinct('session_id')
             ->count('session_id');
+    }
+
+    public static function totalViewsByMonth($month, $year)
+    {
+        return self::whereMonth('created_at', $month)
+            ->whereYear('created_at', $year)
+            ->count();
     }
 }

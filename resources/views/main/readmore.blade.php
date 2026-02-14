@@ -46,33 +46,22 @@
         "description": "{{ Str::limit(strip_tags($post->description), 160) }}"
     }
     </script>
-
-    <!-- Font Awesome -->
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> --}}
-
-    <!-- Vite Assets -->
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @vite('resources/js/readmore.js')
 </head>
 
 <body class="bg-unik-light text-unik-dark font-sans">
+
+    
+
     @include('common.header')
-    @php
-        $breadcrumbs = [
-            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
-            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
-            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-            ['label' => $categoryName ?? 'Category', 'url' => url('/categories/' . "travel"), 'icon' => 'fa-tag'],
-            ['label' => $post->title ?? 'Post', 'icon' => 'fa-newspaper'],
-        ];
-    @endphp
     <!-- Reading Progress Bar -->
     <div class="fixed top-0 left-0 w-full h-1 bg-unik-primary/20 z-50">
         <div class="h-full bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent" id="readingProgress"
             style="width: 0%; transition: width 0.3s ease;">
         </div>
     </div>
-
     <!-- Article Header -->
     <header
         class="relative bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-12 md:py-16 overflow-hidden">
@@ -97,7 +86,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="far fa-eye"></i>
-                        <span>{{ $viewStats->total ?? '0' }} views</span>
+                        <span>{{ $viewStats['total'] ?? '0' }} views</span>
                     </div>
                 </div>
             </div>
@@ -174,6 +163,7 @@
                     <div class="mb-12">
                         <article class="prose prose-lg max-w-none bg-white md:p-8 content-body">
                             {!! (new Parsedown())->text($post->description ?? '') !!}
+                            {{-- {{ $post->description }} --}}
                         </article>
                     </div>
 

@@ -1,25 +1,24 @@
 import $ from 'jquery';
 
-function convertMarkdownHashesToHeadings() {
-    const $content = $('.content-body');
-    if (!$content.length) return;
+// function convertMarkdownHashesToHeadings() {
+//     const $content = $('.content-body');
+//     if (!$content.length) return;
 
-    let html = $content.html();
+//     let html = $content.html();    
 
-    if (/\<h[1-6]/i.test(html)) return;
-    html = html.replace(/^(#{1,6})\s*(.+)$/gm, function (_, hashes, text) {
-        const level = Math.min(hashes.length, 6);
-        return '<h' + level + '>' + text.trim() + '</h' + level + '>';
-    });
-
-    $content.html(html);
-}
+//     if (/\<h[1-6]/i.test(html)) return;
+//     html = html.replace(/^(#{1,6})\s*(.+)$/gm, function (_, hashes, text) {
+//         const level = Math.min(hashes.length, 6);        
+//         return '<h' + level + '>' + text.trim() + '</h' + level + '>';
+//     });
+//     $content.html(html);
+// }
 
 function addHeadingIdsFromTOC() {
 
     const $content = $('.content-body');
     const $headings = $content.find('h2, h3, h4');
-    console.log($headings);
+
     const tocData = window.tocData || [];
 
     if (tocData.length === 0) {
@@ -55,14 +54,20 @@ function addHeadingIdsFromTOC() {
         }
     });
 }
+
 function initTOCHighlight() {
-    const $tocLinks = $('#tocList a');
+    const $tocLinks = $('#tocList a.anchor-link');
     if (!$tocLinks.length) return;
 
-    $(window).off('scroll.toc resize.toc load.toc');
-    $tocLinks.off('click.toc');
+    $(window).off('.toc');
+    $tocLinks.off('.toc');
 
     const sections = [];
+    let activeId = null;
+    let isScrolling = false;
+    let rafLock = false;
+    const OFFSET = 100;
+    const ACTIVE_OFFSET = 150;
 
     function calculateSections() {
         sections.length = 0;
@@ -84,33 +89,37 @@ function initTOCHighlight() {
 
     calculateSections();
 
-    let activeId = null;
-    let isAnimating = false;
-    let rafLock = false;
-
+    /* ---------------- CLICK HANDLER ---------------- */
     $tocLinks.on('click.toc', function (e) {
         e.preventDefault();
+        e.stopImmediatePropagation();
+
+        if (isScrolling) return;
 
         const id = this.getAttribute('href');
         const section = sections.find(s => s.id === id);
         if (!section) return;
 
-        isAnimating = true;
+        isScrolling = true;
+        window.scrollTo({
+            top: section.top - OFFSET,
+            behavior: 'smooth'
+        });
 
-        $('html, body').stop().animate(
-            { scrollTop: section.top - 100 },
-            500,
-            () => isAnimating = false
-        );
+        setActive(id);
+
+        setTimeout(() => {
+            isScrolling = false;
+        }, 600);
     });
 
     $(window).on('scroll.toc', function () {
-        if (isAnimating || rafLock) return;
+        if (isScrolling || rafLock) return;
 
         rafLock = true;
 
         requestAnimationFrame(() => {
-            const scrollPos = window.pageYOffset + 150;
+            const scrollPos = window.pageYOffset + ACTIVE_OFFSET;
             let currentId = null;
 
             for (let i = 0; i < sections.length; i++) {
@@ -120,12 +129,7 @@ function initTOCHighlight() {
             }
 
             if (currentId && currentId !== activeId) {
-                activeId = currentId;
-
-                $tocLinks.removeClass('active');
-                $tocLinks
-                    .filter(`[href="${currentId}"]`)
-                    .addClass('active');
+                // setActive(currentId);
             }
 
             rafLock = false;
@@ -133,6 +137,19 @@ function initTOCHighlight() {
     });
 
     $(window).on('resize.toc load.toc', calculateSections);
+
+    function setActive(id) {
+        console.log('Setting active TOC item:', id);
+        activeId = id;
+
+        $tocLinks.removeClass(
+            'active bg-unik-primary/10 border-unik-primary'
+        );
+
+        $tocLinks
+            .filter(`[href="${id}"]`)
+            .addClass('active bg-unik-primary/10 border-unik-primary');
+    }
 }
 
 function enhanceContent() {
@@ -150,17 +167,16 @@ function enhanceContent() {
         });
     }
 
-    // Rest of your enhanceContent function remains the same...
     // Style paragraphs after headings
-    $content.find('h2 + p, h3 + p, h4 + p').addClass('first-line:font-medium first-line:text-unik-primary/80');
+    $content.find('h2 + p, h3 + p, h4 + p').addClass('first-line:font-large first-line:text-[#0013a0] first-line:font-semibold');
 
     // Style lists
     $content.find('ul').addClass('space-y-2 pl-6');
     $content.find('ul li').addClass('relative pl-2');
-    $content.find('ul li:before').remove();
-    $content.find('ul li').each(function () {
-        $(this).prepend('<span class="absolute -left-4 text-unik-primary">•</span>');
-    });
+    // $content.find('ul li:before').remove();
+    // $content.find('ul li').each(function () {
+    //     $(this).prepend('<span class="absolute -left-4 text-unik-primary">•</span>');
+    // });
 
     $content.find('ol').addClass('space-y-2 pl-8 list-decimal');
     $content.find('ol li').addClass('pl-2');
@@ -189,16 +205,9 @@ function enhanceContent() {
 }
 
 $(document).ready(function () {
-    let isScrolling = false;
-    // If description contains markdown-style hashes (e.g. "## Title"),
-    // convert them to heading elements first so IDs can be added.
-    convertMarkdownHashesToHeadings();
+
+    // convertMarkdownHashesToHeadings();
     addHeadingIdsFromTOC();
-
-    if ($('#tocList a').length > 0) {
-        initTOCHighlight();
-    }
-
     enhanceContent();
 
     $('#tocList').before(`
@@ -212,29 +221,8 @@ $(document).ready(function () {
         $(this).find('i').toggleClass('fa-bars fa-times');
     });
 
-    $('.anchor-link').on('click', function (e) {
-        e.preventDefault();
-        if (isScrolling) return;
+    if ($('#tocList a').length > 0) {
+        initTOCHighlight();
+    }
 
-        const targetId = $(this).attr('href');
-        const $target = $(targetId);
-
-        if (!$target.length) return;
-
-        isScrolling = true;
-
-        $('html').stop().animate(
-            {
-                scrollTop: $target.offset().top - 100
-            },
-            500,
-            function () {
-                isScrolling = false;
-            }
-        );
-
-        $('#tocList a').removeClass('active bg-unik-primary/10 border-unik-primary');
-        $(this).addClass('active bg-unik-primary/10 border-unik-primary');
-    });
-    
 });

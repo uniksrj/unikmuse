@@ -113,18 +113,10 @@
     <div class="progress-bar" id="readingProgress"></div>
 
     @include('common.header')
-    {{-- <div class="bg-white border-b border-unik-border">
-        <div class="container-unik py-4">
-
-            <x-breadcrumbs :items="[
-                ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
-                ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
-                ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-                ['label' => $categoryName, 'url' => null, 'icon' => 'fa-tag'],
-            ]" />
-
-        </div>
-    </div> --}}
+    @php
+        $parsedown = new Parsedown();
+        $parsedown->setSafeMode(true);
+    @endphp
     <main class="container-unik py-8 md:py-12">
         <!-- Category Hero Section -->
         <section class="mb-12 fade-in">
@@ -178,16 +170,6 @@
                         </div>
                     </div>
 
-                    <!-- Breadcrumb -->
-                    {{-- <nav class="text-sm opacity-80" aria-label="Breadcrumb">
-                        <ol class="flex justify-center items-center space-x-2">
-                            <li><a href="/" class="hover:text-white transition-colors">Home</a></li>
-                            <li><i class="fas fa-chevron-right text-xs"></i></li>
-                            <li><a href="/categories" class="hover:text-white transition-colors">Categories</a></li>
-                            <li><i class="fas fa-chevron-right text-xs"></i></li>
-                            <li class="font-medium" aria-current="page">{{ $categoryName ?? 'Category' }}</li>
-                        </ol>
-                    </nav> --}}
                 </div>
             </div>
         </section>
@@ -201,10 +183,14 @@
                     $featuredPost = optional($posts->where('is_featured', true)->first());
                 @endphp
                 @if ($featuredPost && $featuredPost->id)
+                    @php
+                        $imagepath = json_decode($featuredPost->file_path, true);
+                        $img = !empty($imagepath) ? $imagepath['original']['webp'] : 'uploads/no_image.jpg';
+                    @endphp
                     <section class="bg-white rounded-unik-xl shadow-unik-lg overflow-hidden fade-in">
                         <div class="md:flex">
                             <div class="md:w-1/2 relative">
-                                <img src="{{ asset('storage/' . ($featuredPost->image ?? 'assets/featured.jpg')) }}"
+                                <img src="{{ asset('storage/' . ($img ?? 'assets/featured.jpg')) }}"
                                     alt="{{ $featuredPost->title ?? 'Featured Post' }}"
                                     class="w-full h-64 md:h-full object-cover" loading="lazy">
                                 <div class="absolute top-4 left-4">
@@ -229,17 +215,10 @@
                                         {{ $featuredPost->title ?? '' }}
                                     </a>
                                 </h2>
+
                                 <p class="text-unik-muted mb-6 leading-relaxed">
-                                    {{ Str::limit(
-                                        strip_tags(
-                                            str_replace(
-                                                ['## ', '### ', '#### ', '##', '###', '####'],
-                                                '',
-                                                $featuredPost->excerpt ?? ($featuredPost->description ?? ''),
-                                            ),
-                                        ),
-                                        200,
-                                    ) }}
+                                    {{ Str::limit(strip_tags($parsedown->text($featuredPost->description ?? '')), 200) }}
+
                                 </p>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
@@ -345,13 +324,7 @@
                                         </h3>
 
                                         <p class="text-unik-muted mb-4 text-sm leading-relaxed">
-
-                                            {{ Str::limit(
-                                                strip_tags(
-                                                    str_replace(['## ', '### ', '#### ', '##', '###', '####'], '', $post->excerpt ?? ($post->description ?? '')),
-                                                ),
-                                                120,
-                                            ) }}
+                                            {{ Str::limit(strip_tags($parsedown->text($post->description ?? '')), 200) }}
                                         </p>
 
                                         <div
@@ -549,7 +522,7 @@
                 </div>
 
                 <!-- Resources Download -->
-                <div class="bg-unik-light rounded-unik-lg p-6 border border-unik-border">
+                <div class="bg-white rounded-unik-lg p-6 border border-unik-border">
                     <h3 class="text-lg font-semibold text-unik-dark mb-4">Free Resources</h3>
                     <p class="text-sm text-unik-muted mb-4">
                         Download our free {{ strtolower($categoryName ?? '') }} checklist and templates
@@ -643,21 +616,6 @@
                     });
                 }
             });
-        });
-
-        // Lazy loading for images
-        document.addEventListener('DOMContentLoaded', () => {
-            const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-            const imageObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.src;
-                        imageObserver.unobserve(img);
-                    }
-                });
-            });
-            lazyImages.forEach(img => imageObserver.observe(img));
         });
     </script>
 </body>

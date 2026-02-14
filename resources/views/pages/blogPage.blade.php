@@ -38,9 +38,12 @@
     @vite('resources/js/blog.js')
 </head>
 
-<body class="bg-unik-light text-unik-dark font-sans">    
+<body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
-
+    @php
+        $parsedown = new Parsedown();
+        $parsedown->setSafeMode(true);
+    @endphp
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-16 md:py-24">
         <div class="container-unik text-center">
@@ -87,9 +90,9 @@
                                 {{ $post['title'] }}
                             </h3>
                             <p class="text-unik-muted mb-4 text-sm md:text-base line-clamp-3" itemprop="description">
-                                {{ Str::limit($post['excerpt'], 120) }}
+                                 {{ Str::limit(strip_tags($parsedown->text($post['excerpt'] ?? '')), 120) }}
                             </p>
-                            <a href="#"
+                            <a href="{{ route('post.show', $post['id']) }}"
                                 class="block px-5 py-2 bg-unik-primary items-center text-white font-medium hover:color-unik-secondary transition-colors text-sm"
                                 itemprop="mainEntityOfPage">
                                 Read More <i class="fas fa-arrow-right ml-2 text-white"></i>
@@ -179,13 +182,13 @@
                                     </h3>
                                     <p class="text-unik-muted mb-6 text-sm md:text-base line-clamp-3"
                                         itemprop="description">
-                                        {{ Str::limit($post['excerpt'], 150) }}
+                                        {{ Str::limit(strip_tags($parsedown->text($post['excerpt'] ?? '')), 150) }}
                                     </p>
                                     <div class="flex justify-between items-center pt-4 border-t border-unik-border">
                                         <span class="text-unik-muted text-sm" itemprop="datePublished">
                                             {{ Carbon::parse($post['published_at'])->format('M d, Y') }}
                                         </span>
-                                        <a href="#"
+                                        <a href="{{ route('post.show', $post['id']) }}"
                                             class="inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm">
                                             Read More <i class="fas fa-arrow-right ml-2"></i>
                                         </a>
@@ -334,21 +337,27 @@
                     <h3 class="text-xl font-semibold text-unik-dark mb-4 font-serif">Most Popular</h3>
                     <div class="space-y-4">
                         @foreach ($popularPosts as $popular)
-                            <div
-                                class="flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-primary/5 transition-colors group">
-                                <img src="{{ asset('storage/' . $popular['thumbnail']['original']['webp']) }}"
-                                    alt="{{ $popular['title'] }}"
-                                    class="w-16 h-16 object-cover rounded-unik-md flex-shrink-0">
-                                <div class="flex-1 min-w-0">
-                                    <h4
-                                        class="font-medium text-unik-dark text-sm mb-1 line-clamp-2 group-hover:text-unik-primary transition-colors">
-                                        {{ Str::limit($popular['title'], 50) }}
-                                    </h4>
-                                    <div class="text-unik-muted text-xs">
-                                        {{ $popular['category'] }} • {{ $popular['estimated_reading_time'] }} min read
+                            <a href="{{ route('post.show', $popular['id']) }}" class="block">
+                                <div
+                                    class="flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-primary/5 transition-colors group">
+
+                                    <img src="{{ asset('storage/' . $popular['thumbnail']['original']['webp']) }}"
+                                        alt="{{ $popular['title'] }}"
+                                        class="w-16 h-16 object-cover rounded-unik-md flex-shrink-0">
+
+                                    <div class="flex-1 min-w-0">
+                                        <h4
+                                            class="font-medium text-unik-dark text-sm mb-1 line-clamp-2 group-hover:text-unik-primary transition-colors">
+                                            {{ Str::limit($popular['title'], 50) }}
+                                        </h4>
+
+                                        <div class="text-unik-muted text-xs">
+                                            {{ $popular['category'] }} • {{ $popular['estimated_reading_time'] }} min
+                                            read
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
                 </div>

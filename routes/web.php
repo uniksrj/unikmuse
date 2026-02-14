@@ -47,7 +47,7 @@ Route::view('/contact', 'pages.contactUs')->name('contact');
 
 Route::get('/category/{categorySlug}', [Blogmain::class, 'byCategory'])
     ->name('category.show')
-    ->where('categorySlug', 'technology|travel|news|lifestyle|digital-trends|productivity|news-updates|stories-experiences|creativity-inspiration');
+    ->where('categorySlug', 'technology|travel|news|life-style|digital-trends|productivity|news-updates|stories-experiences|creativity-inspiration');
 
 // Dynamic category route (if you prefer one route for all)
 // Route::get('/category/{slug}', function ($slug) {

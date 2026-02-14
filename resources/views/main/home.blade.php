@@ -14,27 +14,29 @@
     <meta property="og:image" content="{{ asset('assets/snow.jpg') }}">
     <meta property="og:type" content="website">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+        crossorigin="anonymous" referrerpolicy="no-referrer" /> --}}
 
     <style>
         @font-face {
             font-display: swap !important;
         }
     </style>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @vite('resources/js/blog.js')
 </head>
 
 <body class="bg-unik-light text-unik-dark">
+
     @include('common.header')
 
     <div class="container-unik">
         <!-- Hero Carousel -->
         <div class="carousel-container rounded-unik-xl relative overflow-hidden shadow-unik-lg my-8 md:my-12">
             <div class="carousel-slide active">
-                <img src="{{ asset('assets/snow.jpg') }}" alt="Snowy Mountain Landscape" loading="lazy"
+                <img src="{{ asset('assets/snow.webp') }}" alt="Snowy Mountain Landscape" loading="lazy"
                     class="w-full h-64 md:h-96 object-cover">
                 <div
                     class="carousel-caption absolute bottom-0 bg-gradient-to-t from-unik-primary/90 via-unik-secondary/50 to-transparent p-6 md:p-8">
@@ -63,7 +65,7 @@
 
             <!-- Featured Cards Grid -->
             <div class="featured-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                
+
                 <article
                     class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
                     <div class="border-l-4 border-l-unik-primary p-6 flex-grow">
@@ -163,7 +165,10 @@
                 </article>
             </div>
         </section>
-
+        @php
+            $parsedown = new Parsedown();
+            $parsedown->setSafeMode(true);
+        @endphp
         <!-- Main Content Area -->
         <div class="page-wrapper my-12 md:my-16">
             <div class="layout-container grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
@@ -186,7 +191,7 @@
                                     @php
                                         $imagepath = json_decode($value->file_path, true);
                                         $img = !empty($imagepath)
-                                            ? $imagepath['original']['webp']
+                                            ? $imagepath['medium']['webp']
                                             : 'uploads/no_image.jpg';
                                     @endphp
                                     <img src="{{ asset('storage/' . $img) }}" alt="{{ $value->title }}" loading="lazy"
@@ -198,12 +203,7 @@
                                         {{ $value->title }}</h3>
                                     <p
                                         class="card-text text-unik-muted mb-4 text-sm md:text-base leading-relaxed line-clamp-3">
-                                        {{ Str::limit(
-                                            strip_tags(
-                                                str_replace(['## ', '### ', '#### ', '##', '###', '####'], '', $value->excerpt ?? ($value->description ?? '')),
-                                            ),
-                                            120,
-                                        ) }}
+                                        {{ Str::limit(strip_tags($parsedown->text($featuredPost->description ?? '')), 200) }}
                                     </p>
 
                                     <div

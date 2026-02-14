@@ -13,16 +13,7 @@
 </head>
 
 <body class="bg-unik-light text-unik-dark font-sans">
-    @include('common.header')
-
-    @php
-        $breadcrumbs = [
-            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
-            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
-            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-            ['label' => $categoryName ?? 'Category', 'icon' => 'fa-tag'],
-        ];
-    @endphp
+    @include('common.header')    
 
     <!-- Hero Section -->
     <section class="bg-gradient-to-r from-unik-primary via-unik-secondary to-unik-accent text-white py-12 md:py-16">
@@ -49,20 +40,20 @@
             </div>
         </div>
     </section>
-
+    
     <main class="container-unik py-8 md:py-12">
         <!-- Search & Filter -->
-        <div class="mb-8">
+        {{-- <div class="mb-8">
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="relative w-full md:w-auto">
                     <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-unik-muted"></i>
                     <input type="text" placeholder="Search categories..."
-                        class="pl-12 pr-4 py-3 w-full md:w-80 border border-unik-border rounded-lg focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent">
+                        class="bg-white pl-12 pr-4 py-3 w-full md:w-80 border border-unik-border rounded-lg focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent">
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="text-unik-muted">Sort by:</span>
                     <select
-                        class="border border-unik-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-unik-primary">
+                        class="bg-white border border-unik-border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-unik-primary">
                         <option value="popular">Most Popular</option>
                         <option value="posts">Most Posts</option>
                         <option value="name">Alphabetical</option>
@@ -70,14 +61,12 @@
                     </select>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Categories Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             @foreach ($categories as $category)
                 @php
-                    $categorySlug = strtolower(str_replace(' ', '-', $category['name']));
-                    $categorySlug = str_replace('&', '-and-', $categorySlug);
                     $postCount = $category['post_count'] ?? 0;
                     $icon = match ($category['name']) {
                         'Technology' => 'laptop-code',
@@ -105,7 +94,7 @@
                     };
                 @endphp
 
-                <a href="{{ route('category.show', $categorySlug) }}"
+                <a href="{{ route('category.show', $category['slug']) }}"
                     class="category-card block bg-white rounded-xl shadow-md border border-unik-border hover:shadow-lg hover:border-unik-primary transition-all duration-300 hover:-translate-y-1 p-6 group">
                     <div class="flex items-start justify-between mb-4">
                         <div class="{{ $color }} w-14 h-14 rounded-xl flex items-center justify-center">
@@ -193,7 +182,7 @@
                 @endforeach
             </div>
         </section>
-
+        
         <!-- Category Statistics -->
         <div class="mt-12 bg-white rounded-xl shadow-sm border border-unik-border p-6">
             <h3 class="text-xl font-bold text-unik-dark mb-6">Category Statistics</h3>
@@ -211,7 +200,7 @@
                     <div class="text-sm text-unik-muted">Contributing Authors</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl font-bold text-unik-light mb-2">{{ $totalViews ?? '10K' }}+</div>
+                    <div class="text-3xl font-bold text-unik-light mb-2">{{ $totalViewsByMonth ?? '10K' }}+</div>
                     <div class="text-sm text-unik-muted">Monthly Views</div>
                 </div>
             </div>
@@ -222,18 +211,18 @@
             <div class="max-w-2xl mx-auto">
                 <i class="fas fa-envelope-open-text text-5xl mb-6"></i>
                 <h3 class="text-2xl font-bold mb-4">Stay Updated Across All Categories</h3>
-                <p class="opacity-90 mb-6">
+                <p class="opacity-90 mb-6 ">
                     Get weekly digest of the best articles from all our categories delivered to your inbox
                 </p>
                 <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                     <input type="email" placeholder="Your email address"
-                        class="flex-grow px-4 py-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white">
+                        class="flex-grow px-4 py-3 bg-white rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white">
                     <button type="submit"
                         class="px-6 py-3 bg-white text-unik-primary font-bold rounded-lg hover:bg-gray-100 transition-colors">
                         Subscribe
                     </button>
                 </form>
-                <p class="text-sm opacity-75 mt-4">No spam. Unsubscribe anytime.</p>
+                <p class="text-sm text-white mt-4">No spam. Unsubscribe anytime.</p>
             </div>
         </div>
     </main>

@@ -1,12 +1,12 @@
 {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> --}}
 <link rel="stylesheet" href="{{ asset('fontawesome/css/all.min.css') }}">
 <header class="blog-header bg-unik-primary text-white shadow-unik-lg" role="banner">
-    <nav class="navbar container-unik mx-auto px-4" role="navigation" aria-label="Main Navigation">
+    <nav class="navbar container-unik mx-auto px-6" role="navigation" aria-label="Main Navigation">
         <!-- Logo -->
         <div class="logo flex items-center">
             <a href="{{ url('/') }}" class="logo-link flex items-center gap-3">
                 <div class="logo-text">
-                    <img src="{{ asset('assets/unikmusewhite.png') }}" alt="Unik Muse" class="h-8 md:h-10">
+                    <img src="{{ asset('assets/unikmusewhite.webp') }}" alt="Unik Muse" class="h-10 md:h-10">
                 </div>
             </a>
         </div>
@@ -19,31 +19,29 @@
                 <label for="search-input" class="visually-hidden">Search Blog</label>
                 <div class="relative w-full">
                     <input id="search-input" type="text" name="q" placeholder="Search articles..." required
-                        class="w-full rounded-unik-lg px-4 py-2 border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
+                        class="w-full rounded-unik-lg px-4 py-2 hidden md:block border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
                     <button type="submit"
-                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-unik-secondary text-white px-4 py-1 rounded-unik-md hover:bg-unik-secondary/90 transition-colors" aria-label="Search">
-                        <i class="fas fa-search"></i>
+                        class="bg-[#4E56C0] absolute hidden md:block right-2 top-1/2 transform-translate-y-1/2 text-white px-4 py-1 rounded-lg transition-colors" aria-label="Search">
+                        <i class="fas fa-search hover:text-unik-accent"></i>
                     </button>
                 </div>
             </form>
         </div>
         @endif
         <!-- Hamburger Menu for Mobile -->
-        <div class="hamburger md:hidden" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false"
+        <div class="hamburger md:hidden mx-4" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false"
             role="button" aria-controls="nav-links" tabindex="0">
             <span class="bg-white"></span>
             <span class="bg-white"></span>
             <span class="bg-white"></span>
         </div>
-
-        <!-- Navigation Links - Fixed for responsive design -->
-        <ul class="nav-links mb-0 py-2" id="nav-links">
-            <!-- Mobile Search - Hidden on desktop -->
+        
+        <ul class="nav-links mb-0 py-2" id="nav-links">            
             <li class="md:hidden mb-4">
                 <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
                     onsubmit="encodeSearch()">
                     <label for="search-input-mobile" class="visually-hidden">Search Blog</label>
-                    <div class="relative w-full">
+                    <div class="relative w-full hidden md:block">
                         <input id="search-input-mobile" type="text" name="q" placeholder="Search articles..."
                             required
                             class="w-full rounded-unik-lg px-4 py-2 border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent text-unik-dark">
@@ -70,7 +68,7 @@
                     Categories <i class="fas fa-chevron-down text-sm"></i>
                 </a>
 
-                <ul class="dropdown-menu_category absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
+                <ul class="dropdown-menu_category absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 opacity-0 invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
                     aria-label="Submenu">
                     <li><a href="{{ route('category.show', 'technology') }}"
                             class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Technology</a>
@@ -125,6 +123,7 @@
         });
     </script>
 </header>
+
 @if (!empty($breadcrumbs))
     <nav aria-label="Breadcrumb">
         <div class="bg-white border-b border-unik-border">

@@ -474,7 +474,7 @@
     }
 
     .nav-links {
-        @apply fixed md:relative top-0 right-0 h-screen md:h-auto w-64 md:w-auto bg-unik-primary md:bg-transparent shadow-unik-lg md:shadow-none z-40 transform translate-x-full md:translate-x-0 transition-transform duration-300 md:flex md:items-center md:space-x-2 p-6 md:p-0;
+        @apply fixed md:relative top-0 right-0 h-screen md:h-auto w-64 md:w-auto bg-unik-primary md:bg-transparent shadow-unik-lg md:shadow-none z-40 transform translate-x-full md:translate-x-0 transition-transform duration-300 md:flex md:items-center md:space-x-2 p-6 md:p-0 md:overflow-y-hidden  overflow-y-auto;
     }
 
     .nav-links.active {
