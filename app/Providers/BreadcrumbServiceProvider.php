@@ -21,6 +21,25 @@ class BreadcrumbServiceProvider extends ServiceProvider
         'stories-experiences' => ['label' => 'Stories & Experiences', 'icon' => 'fa-feather'],
         'creativity-inspiration' => ['label' => 'Creativity & Inspiration', 'icon' => 'fa-lightbulb'],
     ];
+
+    private function resolveCategoryMeta(?string $category): array
+    {
+        if (!empty($category) && isset($this->categoryMap[$category])) {
+            return $this->categoryMap[$category];
+        }
+
+        if (!empty($category)) {
+            return [
+                'label' => ucwords(str_replace('-', ' ', $category)),
+                'icon' => 'fa-folder',
+            ];
+        }
+
+        return [
+            'label' => 'Category',
+            'icon' => 'fa-folder',
+        ];
+    }
     /**
      * Register services.
      */
@@ -55,28 +74,74 @@ class BreadcrumbServiceProvider extends ServiceProvider
                     break;
 
                 case 'category.show':
-                    
-                    if ($category = request()->route('categorySlug')) {                        
+                    if ($category = request()->route('categorySlug')) {
+                        $categoryMeta = $this->resolveCategoryMeta($category);
                         $breadcrumbs = [
                             ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
                             ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
                             ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-                            ['label' => $this->categoryMap[$category]['label'],'icon' => $this->categoryMap[$category]['icon']]                       
+                            ['label' => $categoryMeta['label'], 'icon' => $categoryMeta['icon']]
                         ];
-                    }                 
+                    }
                     break;
 
                 case 'post.show':
-                    if ($post_id = request()->route('id')) {
-                        $post = newpost_details::where('id', $post_id)->first();
-                        $breadcrumbs = [
-                            ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
-                            ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
-                            ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
-                            ['label' =>  $this->categoryMap[$post->category]['label'], 'url' => url('/category'.'/'. $post->category), 'icon' => $this->categoryMap[$post->category]['icon']] ,
-                            ['label' => $post->title, 'icon' => 'fa-file-alt'],
-                        ];
+                    $slugOrId = request()->route('slugOrId');
+                    if (!empty($slugOrId)) {
+                        $post = is_numeric($slugOrId)
+                            ? newpost_details::select('title', 'category', 'slug', 'id')->find($slugOrId)
+                            : newpost_details::select('title', 'category', 'slug', 'id')->where('slug', $slugOrId)->first();
+
+                        if ($post) {
+                            $categoryMeta = $this->resolveCategoryMeta($post->category);
+                            $breadcrumbs = [
+                                ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                                ['label' => 'Blog', 'url' => url('/blog'), 'icon' => 'fa-blog'],
+                                ['label' => 'Categories', 'url' => url('/categories'), 'icon' => 'fa-folder-open'],
+                                [
+                                    'label' => $categoryMeta['label'],
+                                    'url' => url('/category/' . $post->category),
+                                    'icon' => $categoryMeta['icon']
+                                ],
+                                ['label' => $post->title, 'icon' => 'fa-file-alt'],
+                            ];
+                        }
                     }
+                    break;
+
+                case 'about':
+                    $breadcrumbs = [
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'About', 'icon' => 'fa-circle-info'],
+                    ];
+                    break;
+
+                case 'contact':
+                    $breadcrumbs = [
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'Contact', 'icon' => 'fa-envelope'],
+                    ];
+                    break;
+
+                case 'privacy.policy':
+                    $breadcrumbs = [
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'Privacy Policy', 'icon' => 'fa-shield-halved'],
+                    ];
+                    break;
+
+                case 'terms.conditions':
+                    $breadcrumbs = [
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'Terms & Conditions', 'icon' => 'fa-file-contract'],
+                    ];
+                    break;
+
+                case 'disclaimer':
+                    $breadcrumbs = [
+                        ['label' => 'Home', 'url' => url('/'), 'icon' => 'fa-home'],
+                        ['label' => 'Disclaimer', 'icon' => 'fa-triangle-exclamation'],
+                    ];
                     break;
             }
 

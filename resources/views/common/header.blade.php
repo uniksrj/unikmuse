@@ -1,134 +1,259 @@
-{{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> --}}
 <link rel="stylesheet" href="{{ asset('fontawesome/css/all.min.css') }}">
-<header class="blog-header bg-unik-primary text-white shadow-unik-lg" role="banner">
-    <nav class="navbar container-unik mx-auto px-6" role="navigation" aria-label="Main Navigation">
-        <!-- Logo -->
-        <div class="logo flex items-center">
-            <a href="{{ url('/') }}" class="logo-link flex items-center gap-3">
-                <div class="logo-text">
-                    <img src="{{ asset('assets/unikmusewhite.webp') }}" alt="Unik Muse" class="h-10 md:h-10">
+@php
+    $rawSearch = request('q');
+    $decodedSearch = '';
+
+    if (!empty($rawSearch)) {
+        $decoded = base64_decode((string) $rawSearch, true);
+        $decodedSearch = $decoded !== false ? trim($decoded) : trim((string) $rawSearch);
+    }
+
+    $mainLinks = [
+        ['label' => 'Home', 'url' => route('home'), 'active' => request()->routeIs('home')],
+        ['label' => 'Blog', 'url' => route('blog.index'), 'active' => request()->routeIs('blog.*') || request()->routeIs('post.show')],
+        ['label' => 'Categories', 'url' => route('categories.index'), 'active' => request()->routeIs('categories.index') || request()->routeIs('category.show')],
+        ['label' => 'About', 'url' => route('about'), 'active' => request()->routeIs('about')],
+        ['label' => 'Contact', 'url' => route('contact'), 'active' => request()->routeIs('contact')],
+    ];
+
+    $categoryLinks = [
+        ['label' => 'Technology', 'slug' => 'technology'],
+        ['label' => 'Travel', 'slug' => 'travel'],
+        ['label' => 'Lifestyle', 'slug' => 'life-style'],
+        ['label' => 'Digital Trends', 'slug' => 'digital-trends'],
+        ['label' => 'Productivity', 'slug' => 'productivity'],
+        ['label' => 'News & Updates', 'slug' => 'news-updates'],
+        ['label' => 'Stories & Experiences', 'slug' => 'stories-experiences'],
+        ['label' => 'Creativity & Inspiration', 'slug' => 'creativity-inspiration'],
+    ];
+@endphp
+
+<style>
+    .site-header-wrap a {
+        text-decoration: none !important;
+    }
+
+    .site-header-wrap .header-link {
+        color: rgba(241, 245, 249, 0.9) !important;
+    }
+
+    .site-header-wrap .header-link:hover,
+    .site-header-wrap .header-link:focus-visible {
+        color: #ffffff !important;
+    }
+
+    .site-header-wrap .header-link-active {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .site-header-wrap .dropdown-panel a {
+        color: #0f172a !important;
+    }
+
+    .site-header-wrap .dropdown-panel a:hover {
+        color: #0f172a !important;
+        background-color: #e2e8f0;
+    }
+
+    .site-header-wrap .brand-title,
+    .site-header-wrap .brand-subtitle,
+    .site-header-wrap .search-icon,
+    .site-header-wrap .menu-label {
+        color: #ffffff !important;
+    }
+
+    .site-header-wrap .menu-overlay {
+        background: rgba(2, 6, 23, 0.6);
+    }
+</style>
+
+<header class="site-header-wrap sticky top-0 z-50 border-b border-slate-800/60 bg-slate-950/95 shadow-lg backdrop-blur">
+    <div class="container-unik py-3">
+        <div class="flex items-center justify-between gap-3">
+            <a href="{{ route('home') }}" class="flex min-w-0 items-center gap-3" aria-label="Unik Muse home">
+                <img src="{{ asset('assets/unikmusewhite.webp') }}" alt="Unik Muse" class="h-9 w-auto sm:h-10">
+                <div class="hidden sm:block">
+                    <p class="brand-title mb-0 text-sm font-semibold tracking-wide">Unik Muse</p>
+                    <p class="brand-subtitle mb-0 text-[11px] uppercase tracking-[0.16em] text-slate-300">Editorial Blog</p>
                 </div>
             </a>
+
+            <form action="{{ route('home') }}" method="GET" role="search" class="hidden flex-1 items-center justify-end px-2 lg:flex">
+                <label for="header-search" class="sr-only">Search articles</label>
+                <div class="relative w-full max-w-md">
+                    <input
+                        id="header-search"
+                        name="q"
+                        type="text"
+                        value="{{ $decodedSearch }}"
+                        placeholder="Search articles, topics, categories..."
+                        class="w-full rounded-full border border-slate-700 bg-slate-900/70 px-4 py-2.5 pr-11 text-sm text-slate-100 placeholder:text-slate-400 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/40">
+                    <button type="submit" class="search-icon absolute right-3 top-1/2 -translate-y-1/2 text-sm" aria-label="Search">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <button
+                type="button"
+                id="header-menu-toggle"
+                class="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-800 md:hidden"
+                aria-expanded="false"
+                aria-controls="mobile-nav-panel">
+                <i class="fas fa-bars"></i>
+                <span class="menu-label">Menu</span>
+            </button>
         </div>
 
-        <!-- Search Bar - Visible on Home Page Only -->
-        @if (request()->is('/'))
-            <div class="search-container flex-grow mx-4 hidden md:block">
-                <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
-                    onsubmit="encodeSearch()">
-                    <label for="search-input" class="visually-hidden">Search Blog</label>
-                    <div class="relative w-full">
-                        <input id="search-input" type="text" name="q" placeholder="Search articles..." required
-                            class="w-full rounded-unik-lg px-4 py-2 pr-14 hidden md:block border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
-                        <button type="submit"
-                            class="bg-[#4E56C0] absolute hidden md:flex items-center justify-center right-2 top-1/2 -translate-y-1/2 text-white px-3 py-1 rounded-lg transition-colors"
-                            aria-label="Search">
-                            <i class="fas fa-search hover:text-unik-accent"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        @endif
-        <!-- Hamburger Menu for Mobile -->
-        <div class="hamburger md:hidden mx-4" id="hamburger-btn" aria-label="Toggle navigation menu"
-            aria-expanded="false" role="button" aria-controls="nav-links" tabindex="0">
-            <span class="bg-white"></span>
-            <span class="bg-white"></span>
-            <span class="bg-white"></span>
-        </div>
+        <nav class="mt-3 hidden items-center justify-between gap-3 md:flex" aria-label="Main Navigation">
+            <ul class="flex flex-wrap items-center gap-1 lg:gap-2">
+                @foreach ($mainLinks as $link)
+                    @if ($link['label'] === 'Categories')
+                        <li class="group relative">
+                            <a href="{{ $link['url'] }}"
+                               class="header-link inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition {{ $link['active'] ? 'header-link-active' : '' }}"
+                               aria-current="{{ $link['active'] ? 'page' : 'false' }}">
+                                {{ $link['label'] }} <i class="fas fa-chevron-down text-[10px]"></i>
+                            </a>
+                            <div class="dropdown-panel invisible absolute left-0 top-[110%] z-20 w-72 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                                @foreach ($categoryLinks as $category)
+                                    <a href="{{ route('category.show', $category['slug']) }}" class="block rounded-lg px-3 py-2 text-sm font-medium transition">
+                                        {{ $category['label'] }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        </li>
+                    @else
+                        <li>
+                            <a href="{{ $link['url'] }}"
+                               class="header-link inline-flex rounded-lg px-4 py-2 text-sm font-medium transition {{ $link['active'] ? 'header-link-active' : '' }}"
+                               aria-current="{{ $link['active'] ? 'page' : 'false' }}">
+                                {{ $link['label'] }}
+                            </a>
+                        </li>
+                    @endif
+                @endforeach
+            </ul>
 
-        <ul class="nav-links mb-0 py-2" id="nav-links">
-            <li class="md:hidden mb-4">
-                <form class="search-bar w-full" action="{{ url('/') }}" method="GET" role="search"
-                    onsubmit="encodeSearch()">
-                    <label for="search-input-mobile" class="visually-hidden">Search Blog</label>
-                    <div class="relative w-full hidden md:block">
-                        <input id="search-input-mobile" type="text" name="q" placeholder="Search articles..."
-                            required
-                            class="w-full rounded-unik-lg px-4 py-2 border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent text-unik-dark">
-                        <button type="submit"
-                            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-unik-secondary text-white px-4 py-1 rounded-unik-md hover:bg-unik-secondary/90 transition-colors">
+            <a href="{{ route('blog.index') }}" class="inline-flex items-center gap-2 rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-300">
+                Explore Posts <i class="fas fa-arrow-right text-xs"></i>
+            </a>
+        </nav>
+
+        <div id="mobile-nav-panel" class="hidden md:hidden" aria-hidden="true">
+            <div id="mobile-nav-overlay" class="menu-overlay fixed inset-0 z-40"></div>
+            <div class="fixed inset-y-0 right-0 z-50 w-[86%] max-w-sm overflow-y-auto border-l border-slate-700 bg-slate-950 p-5 shadow-2xl size-dvh">
+                <div class="mb-5 flex items-center justify-between">
+                    <p class="mb-0 text-sm font-semibold uppercase tracking-[0.16em] text-slate-300">Navigation</p>
+                    <button type="button" id="mobile-nav-close" class="rounded-md border border-slate-700 px-2 py-1 text-slate-200">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                </div>
+
+                <form action="{{ route('home') }}" method="GET" role="search" class="mb-5">
+                    <label for="header-search-mobile" class="sr-only">Search articles</label>
+                    <div class="relative">
+                        <input
+                            id="header-search-mobile"
+                            name="q"
+                            type="text"
+                            value="{{ $decodedSearch }}"
+                            placeholder="Search articles..."
+                            class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 pr-10 text-sm text-slate-100 placeholder:text-slate-400 focus:border-cyan-400 focus:outline-none">
+                        <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300" aria-label="Search">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
                 </form>
-            </li>
 
-            <li><a href="{{ url('/') }}"
-                    class="nav-link block text-white hover:text-unik-light transition-colors py-3 px-4 rounded-unik-md hover:bg-white/10 md:inline-block md:py-2"
-                    aria-current="{{ request()->is('/') ? 'page' : false }}">Home</a></li>
-            <li><a href="{{ url('/blog') }}"
-                    class="nav-link block text-white hover:text-unik-light transition-colors py-3 px-4 rounded-unik-md hover:bg-white/10 md:inline-block md:py-2">Blog</a>
-            </li>
-
-            <!-- Categories Dropdown with fixed hover -->
-            <li class="dropdown relative group">
-                <a href="{{ url('/categories') }}"
-                    class="dropdown-toggle_box nav-link block text-white hover:text-unik-light transition-colors py-3 px-4 rounded-unik-md hover:bg-white/10 md:inline-block md:py-2 flex items-center justify-between md:justify-start gap-2"
-                    id="dropdown-cat">
-                    Categories <i class="fas fa-chevron-down text-sm"></i>
-                </a>
-
-                <ul id="category-menu"
-                    class="dropdown-menu_category relative md:absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 hidden md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
-                    aria-label="Submenu">
-                    <li><a href="{{ route('category.show', 'technology') }}"
-                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Technology</a>
-                    </li>
-                    <li><a href="{{ route('category.show', 'travel') }}"
-                            class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Travel</a>
-                    </li>
-                    <li><a href="{{ route('category.show', 'life-style') }}"
-                            class="block px-4 py-3 text-unik-light hover:bg-unik-light/20 transition-colors text-unik-dark">Lifestyle</a>
-                    </li>
-                    <li><a href="{{ route('category.show', 'digital-trends') }}"
-                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Digital
-                            Trends</a>
-                    </li>
-                    <li><a href="{{ route('category.show', 'productivity') }}"
-                            class="block px-4 py-3 text-unik-accent hover:bg-unik-light/20 transition-colors">Productivity
-                        </a></li>
-                    <li><a href="{{ route('category.show', 'news-updates') }}"
-                            class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">News
-                            & Updates</a>
-                    </li>
-                    <li><a href="{{ route('category.show', 'stories-experiences') }}"
-                            class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Stories
-                            & Experiences</a>
-                    </li>
-                    <li><a href="{{ route('category.show', 'creativity-inspiration') }}"
-                            class="block px-4 py-3 text-unik-secondary hover:bg-unik-light/20 transition-colors">Creativity
-                            & Inspiration</a>
-                    </li>
+                <ul class="space-y-1">
+                    @foreach ($mainLinks as $link)
+                        @if ($link['label'] === 'Categories')
+                            <li>
+                                <button type="button" id="mobile-categories-toggle" class="header-link flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm font-medium {{ $link['active'] ? 'header-link-active' : '' }}">
+                                    Categories
+                                    <i id="mobile-categories-icon" class="fas fa-chevron-down text-xs"></i>
+                                </button>
+                                <div id="mobile-categories-list" class="mt-1 hidden rounded-lg border border-slate-800 bg-slate-900 p-2">
+                                    @foreach ($categoryLinks as $category)
+                                        <a href="{{ route('category.show', $category['slug']) }}" class="header-link block rounded-md px-3 py-2 text-sm">
+                                            {{ $category['label'] }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </li>
+                        @else
+                            <li>
+                                <a href="{{ $link['url'] }}" class="header-link block rounded-lg px-3 py-2.5 text-sm font-medium {{ $link['active'] ? 'header-link-active' : '' }}" aria-current="{{ $link['active'] ? 'page' : 'false' }}">
+                                    {{ $link['label'] }}
+                                </a>
+                            </li>
+                        @endif
+                    @endforeach
                 </ul>
-            </li>
-
-            <li><a href="{{ url('/about') }}"
-                    class="nav-link block text-white hover:text-unik-light transition-colors py-3 px-4 rounded-unik-md hover:bg-white/10 md:inline-block md:py-2">About</a>
-            </li>
-            <li><a href="{{ url('/contact') }}"
-                    class="nav-link block text-white hover:text-unik-light transition-colors py-3 px-4 rounded-unik-md hover:bg-white/10 md:inline-block md:py-2">Contact</a>
-            </li>
-        </ul>
-    </nav>
+            </div>
+        </div>
+    </div>
 
     <script>
-        function encodeSearch() {
-            let input = document.getElementById("search-input");
-            input.value = btoa(input.value);
-        }
-        const hamburger = document.getElementById('hamburger-btn');
-        const navLinks = document.getElementById('nav-links');
+        (() => {
+            const panel = document.getElementById('mobile-nav-panel');
+            const toggleBtn = document.getElementById('header-menu-toggle');
+            const closeBtn = document.getElementById('mobile-nav-close');
+            const overlay = document.getElementById('mobile-nav-overlay');
+            const categoriesToggle = document.getElementById('mobile-categories-toggle');
+            const categoriesList = document.getElementById('mobile-categories-list');
+            const categoriesIcon = document.getElementById('mobile-categories-icon');
 
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
+            const openMenu = () => {
+                if (!panel || !toggleBtn) return;
+                panel.classList.remove('hidden');
+                panel.setAttribute('aria-hidden', 'false');
+                toggleBtn.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+            };
 
-            if (navLinks.classList.contains('active')) {
-                document.body.style.overflow = "hidden";
-            } else {
-                document.body.style.overflow = "auto";
+            const closeMenu = () => {
+                if (!panel || !toggleBtn) return;
+                panel.classList.add('hidden');
+                panel.setAttribute('aria-hidden', 'true');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = 'auto';
+            };
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', openMenu);
             }
-        });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeMenu);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', closeMenu);
+            }
+
+            if (categoriesToggle && categoriesList && categoriesIcon) {
+                categoriesToggle.addEventListener('click', () => {
+                    categoriesList.classList.toggle('hidden');
+                    categoriesIcon.classList.toggle('fa-chevron-down');
+                    categoriesIcon.classList.toggle('fa-chevron-up');
+                });
+            }
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    closeMenu();
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeMenu();
+                }
+            });
+        })();
     </script>
 </header>
 
@@ -151,22 +276,31 @@
 @endif
 
 @if (!empty($breadcrumbs))
+    @php
+        $breadcrumbItems = collect($breadcrumbs)
+            ->values()
+            ->map(function ($crumb, $index) {
+                $item = [
+                    '@type' => 'ListItem',
+                    'position' => $index + 1,
+                    'name' => (string) ($crumb['label'] ?? ''),
+                ];
+
+                if (!empty($crumb['url'])) {
+                    $item['item'] = (string) $crumb['url'];
+                }
+
+                return $item;
+            })
+            ->all();
+
+        $breadcrumbSchema = [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => $breadcrumbItems,
+        ];
+    @endphp
     <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    @foreach ($breadcrumbs as $index => $crumb)
-    {
-      "@type": "ListItem",
-      "position": {{ $index + 1 }},
-      "name": "{{ $crumb['label'] }}"
-      @if(!empty($crumb['url']))
-      ,"item": "{{ $crumb['url'] }}"
-      @endif
-    }@if(!$loop->last),@endif
-    @endforeach
-  ]
-}
+{!! json_encode($breadcrumbSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
 </script>
 @endif

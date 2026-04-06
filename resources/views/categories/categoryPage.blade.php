@@ -230,43 +230,54 @@
 
     <script>
         // Simple category search
-        document.querySelector('input[type="text"]').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.category-card');
+        const categorySearchInput = document.querySelector('input[type="text"]');
+        if (categorySearchInput) {
+            categorySearchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.category-card');
 
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                const description = card.querySelector('p').textContent.toLowerCase();
+                cards.forEach(card => {
+                    const title = card.querySelector('h3')?.textContent?.toLowerCase() || '';
+                    const description = card.querySelector('p')?.textContent?.toLowerCase() || '';
 
-                if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
             });
-        });
+        }
 
         // Category sorting
-        document.querySelector('select').addEventListener('change', function(e) {
-            const sortBy = e.target.value;
-            const container = document.querySelector('.grid');
-            const cards = Array.from(document.querySelectorAll('.category-card'));
+        const categorySortSelect = document.querySelector('select');
+        if (categorySortSelect) {
+            categorySortSelect.addEventListener('change', function(e) {
+                const sortBy = e.target.value;
+                const container = document.querySelector('.grid');
+                const cards = Array.from(document.querySelectorAll('.category-card'));
 
-            cards.sort((a, b) => {
-                if (sortBy === 'popular') {
-                    const aCount = parseInt(a.querySelector('.bg-unik-light').textContent);
-                    const bCount = parseInt(b.querySelector('.bg-unik-light').textContent);
-                    return bCount - aCount;
-                } else if (sortBy === 'name') {
-                    const aName = a.querySelector('h3').textContent;
-                    const bName = b.querySelector('h3').textContent;
-                    return aName.localeCompare(bName);
+                if (!container || cards.length === 0) {
+                    return;
                 }
-                return 0;
-            });
 
-            cards.forEach(card => container.appendChild(card));
-        });
+                cards.sort((a, b) => {
+                    if (sortBy === 'popular') {
+                        const aCount = parseInt(a.querySelector('.bg-unik-light')?.textContent || '0', 10);
+                        const bCount = parseInt(b.querySelector('.bg-unik-light')?.textContent || '0', 10);
+                        return bCount - aCount;
+                    }
+                    if (sortBy === 'name') {
+                        const aName = a.querySelector('h3')?.textContent || '';
+                        const bName = b.querySelector('h3')?.textContent || '';
+                        return aName.localeCompare(bName);
+                    }
+                    return 0;
+                });
+
+                cards.forEach(card => container.appendChild(card));
+            });
+        }
     </script>
 </body>
 

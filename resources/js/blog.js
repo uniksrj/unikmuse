@@ -3,8 +3,10 @@ import $ from 'jquery';
 const slide = document.querySelector('.carousel-slide') ? document.querySelector('.carousel-slide') : null;
 const caption = slide ? slide.querySelector('.carousel-caption') : null;
 
-const images = document.querySelectorAll('img[loading="lazy"]') ? document.querySelectorAll('img[loading="lazy"]') : [];
 function showSlide(index) {
+    if (!slide || !caption) {
+        return;
+    }
     slide.querySelector('img').setAttribute('src', slides[index].image);
     caption.querySelector('h3').textContent = slides[index].title;
     caption.querySelector('p').textContent = slides[index].text;
@@ -30,12 +32,12 @@ const slides = [{
 
 
 $(document).ready(function () {
-
-    setInterval(() => {
-        currentSlide = (currentSlide + 1) % slides.length;
-        showSlide(currentSlide);
-
-    }, 5000);
+    if (slide && caption) {
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }, 5000);
+    }
 
     $('.loader-overlay').fadeIn(100);
 

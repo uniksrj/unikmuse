@@ -1,310 +1,346 @@
+@php
+    use Carbon\Carbon;
+    use Illuminate\Support\Str;
+
+    $siteName = 'Unik Muse';
+    $metaTitle = $query
+        ? 'Search results for "' . $query . '" | ' . $siteName
+        : $siteName . ' | Fresh Stories on Tech, Travel, Lifestyle and Creativity';
+
+    $metaDescription = $query
+        ? 'Browse curated blog posts matching "' . $query . '" on ' . $siteName . '.'
+        : 'Discover practical guides, deep insights, and inspiring stories across technology, travel, lifestyle, digital trends, and productivity.';
+
+    $canonicalUrl = url()->current();
+    if (!empty($query)) {
+        $canonicalUrl .= '?q=' . urlencode($query);
+    }
+
+    $fallbackImage = asset('assets/snow.webp');
+
+    $resolveImage = function ($post, string $size = 'medium') use ($fallbackImage) {
+        if (empty($post) || empty($post->file_path)) {
+            return $fallbackImage;
+        }
+
+        $images = is_array($post->file_path)
+            ? $post->file_path
+            : json_decode((string) $post->file_path, true);
+
+        if (!is_array($images)) {
+            return $fallbackImage;
+        }
+
+        if (!empty($images[$size]['webp'])) {
+            return asset('storage/' . ltrim($images[$size]['webp'], '/'));
+        }
+
+        foreach (['large', 'medium', 'thumb', 'original'] as $candidate) {
+            if (!empty($images[$candidate]['webp'])) {
+                return asset('storage/' . ltrim($images[$candidate]['webp'], '/'));
+            }
+            if (!empty($images[$candidate]['jpeg'])) {
+                return asset('storage/' . ltrim($images[$candidate]['jpeg'], '/'));
+            }
+        }
+
+        if (!empty($images[0]) && is_string($images[0])) {
+            return asset('storage/' . ltrim($images[0], '/'));
+        }
+
+        return $fallbackImage;
+    };
+
+    $estimateReadTime = function (?string $content) {
+        $words = str_word_count(strip_tags((string) $content));
+        return max(1, (int) ceil($words / 200));
+    };
+
+    $formatCategory = function (?string $slug) {
+        return Str::of((string) $slug)->replace('-', ' ')->title();
+    };
+
+    $categoryPalette = [
+        'technology' => 'from-blue-500/20 to-cyan-500/20 border-blue-500/30 text-blue-700',
+        'travel' => 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-700',
+        'life-style' => 'from-amber-500/20 to-orange-500/20 border-amber-500/30 text-amber-700',
+        'digital-trends' => 'from-indigo-500/20 to-violet-500/20 border-indigo-500/30 text-indigo-700',
+        'productivity' => 'from-rose-500/20 to-pink-500/20 border-rose-500/30 text-rose-700',
+        'tutorials' => 'from-sky-500/20 to-blue-500/20 border-sky-500/30 text-sky-700',
+        'news-updates' => 'from-red-500/20 to-rose-500/20 border-red-500/30 text-red-700',
+        'stories-experiences' => 'from-purple-500/20 to-fuchsia-500/20 border-purple-500/30 text-purple-700',
+        'creativity-inspiration' => 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30 text-yellow-700',
+    ];
+
+    $latestForSchema = $latestPosts->take(5)->values()->map(function ($post, $index) {
+        $postUrl = route('post.show', ['slugOrId' => $post->slug ?: $post->id]);
+        return [
+            '@type' => 'ListItem',
+            'position' => $index + 1,
+            'url' => $postUrl,
+            'name' => $post->title,
+        ];
+    })->all();
+
+    $websiteSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        'name' => $siteName,
+        'url' => url('/'),
+        'description' => $metaDescription,
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => url('/') . '?q={search_term_string}',
+            'query-input' => 'required name=search_term_string',
+        ],
+    ];
+
+    $itemListSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'ItemList',
+        'name' => 'Latest Blog Posts',
+        'itemListElement' => $latestForSchema,
+    ];
+@endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $meta_title ?? 'Unik Muse - Thoughts That Inspire' }}</title>
-    <meta name="description"
-        content="{{ $meta_description ?? 'Explore inspiring thoughts, blogs, guides, and stories on Unik Muse.' }}">
-    <link rel="canonical" href="{{ url()->current() }}">
-    <meta property="og:title" content="{{ $meta_title ?? 'Unik Muse - Thoughts That Inspire' }}">
-    <meta property="og:description"
-        content="{{ $meta_description ?? 'Explore inspiring thoughts, blogs, guides, and stories on Unik Muse.' }}">
-    <meta property="og:image" content="{{ asset('assets/snow.webp') }}">
+    <title>{{ $metaTitle }}</title>
+    <meta name="description" content="{{ $metaDescription }}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    <meta property="og:title" content="{{ $metaTitle }}">
+    <meta property="og:description" content="{{ $metaDescription }}">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:image" content="{{ $featuredPost ? $resolveImage($featuredPost, 'large') : $fallbackImage }}">
 
-    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" /> --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
+    <meta name="twitter:image" content="{{ $featuredPost ? $resolveImage($featuredPost, 'large') : $fallbackImage }}">
 
-    <style>
-        @font-face {
-            font-display: swap !important;
-        }
-    </style>
+    <script type="application/ld+json">{!! json_encode($websiteSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @if (!empty($latestForSchema))
+        <script type="application/ld+json">{!! json_encode($itemListSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @vite('resources/js/blog.js')
 </head>
 
-<body class="bg-unik-light text-unik-dark">
-
+<body class="bg-unik-light text-unik-dark font-sans">
     @include('common.header')
 
-    <div class="container-unik">
-        <!-- Hero Carousel -->
-        <div class="carousel-container rounded-unik-xl relative overflow-hidden shadow-unik-lg my-8 md:my-12">
-            <div class="carousel-slide active">
-                <img src="{{ asset('assets/snow.webp') }}" alt="Snowy Mountain Landscape" loading="lazy"
-                    class="w-full h-64 md:h-96 object-cover">
-                <div
-                    class="carousel-caption absolute bottom-0 bg-gradient-to-t from-unik-primary/90 via-unik-secondary/50 to-transparent p-6 md:p-8">
-                    <h3 class="text-2xl md:text-3xl font-bold unik-text-light mb-2">White Snow</h3>
-                    <p class="text-white text-base md:text-lg width-full opacity-90">
-                        I travel not to go anywhere, but to go. I travel for travel's sake. The great affair is to move.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Featured Section -->
-        <section class="featured-section my-12 md:my-16">
-            <div class="section-header text-center mb-8 md:mb-12">
-                <h2 id="featured-heading" class="section-title text-2xl md:text-3xl font-bold text-unik-primary mb-3">
-                    Featured Pages
-                </h2>
-                <p class="section-subtitle text-unik-muted text-base md:text-lg max-w-2xl mx-auto">
-                    Handpicked collections of our best and most useful content.
-                </p>
-            </div>
-
-            <div class="ads-block bg-white rounded-unik-lg p-6 text-center my-8">
-                <p class="text-sm text-unik-muted">Advertisement</p>
-            </div>
-
-            <!-- Featured Cards Grid -->
-            <div class="featured-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                <article
-                    class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
-                    <div class="border-l-4 border-l-unik-primary p-6 flex-grow">
-                        <div class="featured-icon w-12 h-12 bg-unik-primary/10 rounded-unik-md flex items-center justify-center mb-4"
-                            aria-hidden="true">
-                            <i class="fas fa-laptop-code text-unik-primary text-xl"></i>
-                        </div>
-
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Tech & Innovation</h3>
-                        <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Latest technology trends, software insights, innovation news, and digital transformation
-                            topics.
+    <main>
+        <section class="relative overflow-hidden bg-slate-950 text-white">
+            <div class="absolute -top-16 -left-16 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl"></div>
+            <div class="absolute top-10 right-0 h-80 w-80 rounded-full bg-pink-500/20 blur-3xl"></div>
+            <div class="container-unik relative py-14 md:py-20">
+                <div class="grid gap-10 lg:grid-cols-5 lg:items-center">
+                    <div class="lg:col-span-3">
+                        <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.16em] text-white">
+                            Professional Content Hub
+                        </p>
+                        <h1 class="mb-5 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
+                            Stories and Insights That Build Better Decisions
+                        </h1>
+                        <p class="max-w-2xl text-base text-slate-200 md:text-lg">
+                            Explore high-quality articles on technology, travel, lifestyle, productivity, and digital trends.
+                            Every post is crafted to be useful, readable, and search-friendly.
                         </p>
 
-                        <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/tech" disabled
-                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm cursor-not-allowed"
-                                title="Read tech articles and innovation news">
-                                Explore Tech <i class="fas fa-arrow-right ml-2"></i>
+                        @if (!empty($query))
+                            <div class="mt-6 inline-flex flex-wrap items-center gap-3 rounded-unik-md border border-white/20 bg-white/10 px-4 py-3 text-sm">
+                                <span>Showing results for:</span>
+                                <strong class="text-cyan-200">{{ $query }}</strong>
+                                <a href="{{ route('home') }}" class="rounded-md border border-white/30 px-3 py-1 text-xs uppercase tracking-wide hover:bg-white/10">
+                                    Clear Search
+                                </a>
+                            </div>
+                        @endif
+
+                        <div class="mt-8 flex flex-wrap gap-4">
+                            <a href="{{ route('blog.index') }}" class="rounded-unik-md bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-cyan-300">
+                                Read All Articles
+                            </a>
+                            <a href="{{ route('categories.index') }}" class="rounded-unik-md border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                                Browse Categories
                             </a>
                         </div>
                     </div>
-                </article>
 
-                <!-- Card 2 - News & Updates -->
-                <article
-                    class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
-                    <div class="border-l-4 border-l-unik-secondary p-6 flex-grow">
-                        <div class="featured-icon w-12 h-12 bg-unik-secondary/10 rounded-unik-md flex items-center justify-center mb-4"
-                            aria-hidden="true">
-                            <i class="fas fa-newspaper text-unik-secondary text-xl"></i>
-                        </div>
-
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">News & Updates</h3>
-                        <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Current affairs, important updates, and trending news across various industries and topics.
-                        </p>
-
-                        <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/news" disabled
-                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="Stay updated with latest news">
-                                Read News <i class="fas fa-arrow-right ml-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Card 3 - Motivation & Growth -->
-                <article
-                    class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
-                    <div class="border-l-4 border-l-unik-accent p-6 flex-grow">
-                        <div class="featured-icon w-12 h-12 bg-unik-accent/10 rounded-unik-md flex items-center justify-center mb-4"
-                            aria-hidden="true">
-                            <i class="fas fa-brain text-unik-accent text-xl"></i>
-                        </div>
-
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Motivation & Growth</h3>
-                        <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Personal development, mindset tips, productivity hacks, and inspirational content for
-                            self-improvement.
-                        </p>
-
-                        <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/motivation" disabled
-                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="Find motivation and personal growth tips">
-                                Get Inspired <i class="fas fa-arrow-right ml-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Card 4 - Lifestyle & More -->
-                <article
-                    class="featured-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 relative flex flex-col h-full">
-                    <div class="border-l-4 border-l-unik-light p-6 flex-grow">
-                        <div class="featured-icon w-12 h-12 bg-unik-light/20 rounded-unik-md flex items-center justify-center mb-4"
-                            aria-hidden="true">
-                            <i class="fas fa-globe text-unik-secondary text-xl"></i>
-                        </div>
-
-                        <h3 class="featured-title text-lg font-semibold text-unik-dark mb-3">Lifestyle & More</h3>
-                        <p class="featured-description text-unik-muted mb-5 text-sm leading-relaxed">
-                            Lifestyle tips, health, entertainment, and diverse topics that don't fit into other
-                            categories.
-                        </p>
-
-                        <div class="mt-auto pt-4 absolute bottom-6">
-                            <a href="/lifestyle" disabled
-                                class="featured-link inline-flex items-center text-unik-primary font-medium hover:text-unik-secondary transition-colors text-sm"
-                                title="Explore lifestyle and various topics">
-                                Browse More <i class="fas fa-arrow-right ml-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-        @php
-            $parsedown = new Parsedown();
-            $parsedown->setSafeMode(true);
-        @endphp
-        <!-- Main Content Area -->
-        <div class="page-wrapper my-12 md:my-16">
-            <div class="layout-container grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-                <!-- Main Content -->
-                <main class="content-area lg:col-span-2">
-                    <h2 class="section-title text-2xl md:text-3xl font-bold text-unik-primary mb-2">Latest From Unik
-                        Muse</h2>
-                    <p class="section-subtitle text-unik-muted mb-6 md:mb-8">Tech • Travel • News • Stories • Guides</p>
-
-                    <div class="ad-slot ad-top bg-white rounded-unik-md p-6 text-center my-6 md:my-8">
-                        <p class="text-sm text-unik-muted">Advertisement</p>
-                    </div>
-
-                    <!-- Blog Grid -->
-                    <div class="blog-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @foreach ($data as $value)
-                            <article
-                                class="blog-card bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
-                                <div class="card-image h-48 md:h-56 overflow-hidden rounded-t-unik-lg">
-                                    @php
-                                        $imagepath = json_decode($value->file_path, true);
-                                        $img = !empty($imagepath)
-                                            ? $imagepath['medium']['webp']
-                                            : 'uploads/no_image.jpg';
-                                    @endphp
-                                    <img src="{{ asset('storage/' . $img) }}" alt="{{ $value->title }}" loading="lazy"
-                                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
-                                </div>
-
-                                <div class="card-content p-6 flex-grow relative flex flex-col">
-                                    <h3 class="card-title text-lg md:text-xl font-semibold text-unik-dark mb-3">
-                                        {{ $value->title }}</h3>
-                                    <p
-                                        class="card-text text-unik-muted mb-4 text-sm md:text-base leading-relaxed line-clamp-3">
-                                        {{ Str::limit(strip_tags($parsedown->text($featuredPost->description ?? '')), 200) }}
+                    <div class="lg:col-span-2">
+                        @if ($featuredPost)
+                            <article class="overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm" itemscope itemtype="https://schema.org/BlogPosting">
+                                <img src="{{ $resolveImage($featuredPost, 'large') }}" alt="{{ $featuredPost->title }}" class="h-52 w-full object-cover" loading="eager" itemprop="image">
+                                <div class="p-5">
+                                    <p class="mb-2 text-xs uppercase tracking-[0.16em] text-cyan-200">
+                                        Featured Story
                                     </p>
-
-                                    <div
-                                        class="card-meta flex justify-between items-center mt-auto pt-4 border-t border-unik-border">
-                                        <a href="{{ route('post.show', $value->id) }}"
-                                            class="bg-unik-primary text-white px-4 py-2 rounded-unik-md font-medium hover:bg-unik-primary/90 transition-colors text-sm">
-                                            Read More <i class="fas fa-arrow-right ml-2"></i>
-                                        </a>
-                                        <div class="text-right">
-                                            <small class="block text-unik-muted text-xs">
-                                                <i class="far fa-clock"></i>
-                                                {{ \Carbon\Carbon::parse($value->created_date)->diffForHumans() }}
-                                            </small>
-                                            <p class="meta-info text-unik-muted text-xs mt-1">
-                                                {{ round(str_word_count($value->description) / 200) }} min read
-                                            </p>
-                                        </div>
+                                    <h2 class="mb-2 text-2xl font-semibold leading-snug text-white" itemprop="headline">
+                                        {{ Str::limit($featuredPost->title, 78) }}
+                                    </h2>
+                                    <p class="mb-4 text-sm text-slate-200" itemprop="description">
+                                        {{ Str::limit(strip_tags($featuredPost->description), 130) }}
+                                    </p>
+                                    <div class="flex items-center justify-between text-xs text-slate-300">
+                                        <span>{{ $estimateReadTime($featuredPost->description) }} min read</span>
+                                        <span>{{ Carbon::parse($featuredPost->created_date ?? $featuredPost->created_at)->format('M d, Y') }}</span>
                                     </div>
+                                    <a href="{{ route('post.show', ['slugOrId' => $featuredPost->slug ?: $featuredPost->id]) }}" class="mt-5 inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100" itemprop="mainEntityOfPage">
+                                        Read Featured Story <i class="fas fa-arrow-right text-xs"></i>
+                                    </a>
+                                    <meta itemprop="datePublished" content="{{ Carbon::parse($featuredPost->created_date ?? $featuredPost->created_at)->toIso8601String() }}">
                                 </div>
                             </article>
-                        @endforeach
+                        @else
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
+                                Featured content will appear here once your first post is published.
+                            </div>
+                        @endif
                     </div>
-                </main>
+                </div>
+            </div>
+        </section>
 
-                <!-- Sidebar -->
-                <aside class="sidebar lg:col-span-1 space-y-6">
-                    <div
-                        class="sidebar-box sticky-ad sticky bg-white rounded-unik-lg shadow-unik-sm p-6 border border-unik-border">
-                        <div class="ad-slot rounded-unik-lg p-6 text-center">
-                            <p class="text-sm text-unik-muted">Advertisement</p>
+        <section class="container-unik py-12 md:py-16">
+            <div class="mb-8 flex items-center justify-between gap-4">
+                <h2 class="mb-0 text-2xl font-bold text-slate-900 md:text-3xl">Top Stories</h2>
+                <a href="{{ route('blog.index') }}" class="text-sm font-semibold text-unik-primary">View all posts</a>
+            </div>
+
+            @if ($topStories->isNotEmpty())
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($topStories as $post)
+                        <article class="group overflow-hidden rounded-2xl border border-unik-border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg" itemscope itemtype="https://schema.org/BlogPosting">
+                            <div class="overflow-hidden">
+                                <img src="{{ $resolveImage($post) }}" alt="{{ $post->title }}" class="h-52 w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" itemprop="image">
+                            </div>
+                            <div class="p-5">
+                                <div class="mb-3 flex items-center justify-between text-xs text-unik-muted">
+                                    <span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">{{ $formatCategory($post->category) }}</span>
+                                    <span>{{ Carbon::parse($post->created_date ?? $post->created_at)->diffForHumans() }}</span>
+                                </div>
+                                <h3 class="mb-3 text-xl font-semibold leading-snug text-slate-900 line-clamp-2" itemprop="headline">
+                                    {{ $post->title }}
+                                </h3>
+                                <p class="mb-4 text-sm text-slate-600 line-clamp-3" itemprop="description">
+                                    {{ Str::limit(strip_tags($post->description), 120) }}
+                                </p>
+                                <a href="{{ route('post.show', ['slugOrId' => $post->slug ?: $post->id]) }}" class="inline-flex items-center gap-2 text-sm font-semibold text-unik-primary" itemprop="mainEntityOfPage">
+                                    Read article <i class="fas fa-arrow-right text-xs"></i>
+                                </a>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @else
+                <div class="rounded-2xl border border-dashed border-unik-border bg-white p-10 text-center text-unik-muted">
+                    No stories found yet. Publish posts from your admin panel and they will appear here.
+                </div>
+            @endif
+        </section>
+
+        <section class="bg-white/70 py-12 md:py-14">
+            <div class="container-unik">
+                <div class="mb-8 flex items-end justify-between gap-4">
+                    <div>
+                        <h2 class="mb-1 text-2xl font-bold text-slate-900 md:text-3xl">Trending Categories</h2>
+                        <p class="mb-0 text-sm text-slate-600">Clear navigation for readers and better topical SEO.</p>
+                    </div>
+                    <a href="{{ route('categories.index') }}" class="text-sm font-semibold text-unik-primary">See all categories</a>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    @forelse ($categoryStats as $category)
+                        @php
+                            $slug = $category->category;
+                            $colorClasses = $categoryPalette[$slug] ?? 'from-slate-500/10 to-slate-600/10 border-slate-300 text-slate-700';
+                        @endphp
+                        <a href="{{ route('blog.index', ['category' => $slug]) }}" class="rounded-xl border bg-gradient-to-br p-5 transition hover:-translate-y-1 hover:shadow-md {{ $colorClasses }}">
+                            <p class="mb-2 text-sm font-semibold uppercase tracking-wide">{{ $formatCategory($slug) }}</p>
+                            <p class="mb-0 text-3xl font-bold">{{ $category->total }}</p>
+                            <p class="mb-0 mt-1 text-xs">Published posts</p>
+                        </a>
+                    @empty
+                        <div class="col-span-full rounded-xl border border-dashed border-unik-border bg-white p-8 text-center text-slate-500">
+                            Category analytics will appear when posts are added.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </section>
+
+        <section class="container-unik py-12 md:py-16">
+            <div class="grid gap-8 lg:grid-cols-3">
+                <div class="lg:col-span-2">
+                    <h2 class="mb-6 text-2xl font-bold text-slate-900 md:text-3xl">Latest Articles</h2>
+                    <div class="grid gap-6 md:grid-cols-2">
+                        @forelse ($latestPosts as $post)
+                            <article class="overflow-hidden rounded-2xl border border-unik-border bg-white shadow-sm" itemscope itemtype="https://schema.org/BlogPosting">
+                                <img src="{{ $resolveImage($post) }}" alt="{{ $post->title }}" class="h-48 w-full object-cover" loading="lazy" itemprop="image">
+                                <div class="p-5">
+                                    <div class="mb-3 flex items-center justify-between text-xs text-unik-muted">
+                                        <span>{{ Carbon::parse($post->created_date ?? $post->created_at)->format('M d, Y') }}</span>
+                                        <span>{{ $estimateReadTime($post->description) }} min read</span>
+                                    </div>
+                                    <h3 class="mb-3 text-xl font-semibold text-slate-900 line-clamp-2" itemprop="headline">{{ $post->title }}</h3>
+                                    <p class="mb-4 text-sm text-slate-600 line-clamp-3" itemprop="description">{{ Str::limit(strip_tags($post->description), 130) }}</p>
+                                    <a href="{{ route('post.show', ['slugOrId' => $post->slug ?: $post->id]) }}" class="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800" itemprop="mainEntityOfPage">
+                                        Continue reading
+                                    </a>
+                                    <meta itemprop="datePublished" content="{{ Carbon::parse($post->created_date ?? $post->created_at)->toIso8601String() }}">
+                                </div>
+                            </article>
+                        @empty
+                            <div class="md:col-span-2 rounded-xl border border-dashed border-unik-border bg-white p-10 text-center text-unik-muted">
+                                No articles match this search. Try another keyword.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <aside class="space-y-6">
+                    <div class="rounded-2xl border border-unik-border bg-slate-900 p-6 text-white">
+                        <p class="mb-2 text-xs uppercase tracking-[0.16em] text-cyan-300">Newsletter</p>
+                        <h3 class="mb-2 text-2xl font-semibold">Grow With Better Ideas</h3>
+                        <p class="mb-4 text-sm text-slate-300">Get curated writing and practical tips in your inbox.</p>
+                        <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-md bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-cyan-300">
+                            Subscribe Now
+                        </a>
+                    </div>
+
+                    <div class="rounded-2xl border border-unik-border bg-white p-6 shadow-sm">
+                        <h3 class="mb-4 text-xl font-semibold text-slate-900">Most Read</h3>
+                        <div class="space-y-4">
+                            @forelse ($popularPosts as $index => $post)
+                                <a href="{{ route('post.show', ['slugOrId' => $post->slug ?: $post->id]) }}" class="group flex items-start gap-3 rounded-lg p-2 transition hover:bg-slate-50">
+                                    <span class="mt-1 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">{{ $index + 1 }}</span>
+                                    <span class="text-sm font-medium leading-6 text-slate-700 group-hover:text-slate-900">{{ Str::limit($post->title, 72) }}</span>
+                                </a>
+                            @empty
+                                <p class="mb-0 text-sm text-slate-500">Popular posts will appear once traffic starts growing.</p>
+                            @endforelse
                         </div>
                     </div>
 
-                    <!-- Categories -->
-                    <div class="sidebar-box bg-white rounded-unik-lg shadow-unik-sm p-6 border border-unik-border">
-                        <h3 class="sidebar-title text-lg font-semibold text-unik-dark mb-4">Categories</h3>
-                        <ul class="sidebar-list space-y-2">
-                            <li><a href="{{ route('category.show', 'technology') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-primary/5 text-unik-primary transition-colors">Technology</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'travel') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-secondary/5 text-unik-secondary transition-colors">Travel</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'news') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-accent/5 text-unik-accent transition-colors">News</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'life-style') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-light/20 text-unik-secondary transition-colors">Lifestyle</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'digital-trends') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-primary/5 text-unik-primary transition-colors">Digital
-                                    Trends</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'productivity') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-primary/5 text-unik-primary transition-colors">Productivity</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'news-updates') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-primary/5 text-unik-primary transition-colors">News
-                                    & Updates</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'stories-experiences') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-primary/5 text-unik-primary transition-colors">Stories
-                                    & Experiences</a>
-                            </li>
-                            <li><a href="{{ route('category.show', 'creativity-inspiration') }}"
-                                    class="nav-link block p-2 rounded-unik-md hover:bg-unik-primary/5 text-unik-primary transition-colors">Creativity
-                                    & Inspiration</a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="sidebar-box bg-white rounded-unik-lg shadow-unik-sm p-6 border border-unik-border">
-                        <h3 class="sidebar-title text-lg font-semibold text-unik-dark mb-4">Popular Posts</h3>
-                        <ul class="sidebar-list space-y-3">
-                            <li>
-                                <a href="#"
-                                    class="nav-link flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-primary/5 transition-colors">
-                                    <span class="flex-shrink-0 w-2 h-2 bg-unik-primary rounded-full mt-2"></span>
-                                    <span class="text-unik-primary text-sm">Trending Tech Innovations</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="nav-link flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-secondary/5 transition-colors">
-                                    <span class="flex-shrink-0 w-2 h-2 bg-unik-secondary rounded-full mt-2"></span>
-                                    <span class="text-unik-secondary text-sm">Top Travel Destinations 2025</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="nav-link flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-accent/5 transition-colors">
-                                    <span class="flex-shrink-0 w-2 h-2 bg-unik-accent rounded-full mt-2"></span>
-                                    <span class="text-unik-accent text-sm">Latest AI News</span>
-                                </a>
-                            </li>
+                    <div class="rounded-2xl border border-unik-border bg-white p-6 shadow-sm">
+                        <h3 class="mb-3 text-xl font-semibold text-slate-900">Why This Homepage Works</h3>
+                        <ul class="space-y-2 text-sm text-slate-600">
+                            <li>Clear headline and hierarchy for users and search engines.</li>
+                            <li>Structured metadata and semantic article markup.</li>
+                            <li>Fast-loading image blocks and readable content cards.</li>
+                            <li>Strong internal links to categories and article pages.</li>
                         </ul>
                     </div>
                 </aside>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     @include('common.footer')
 </body>

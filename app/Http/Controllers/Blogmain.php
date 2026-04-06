@@ -144,26 +144,74 @@ class Blogmain extends Controller
 
     public function main(Request $request)
     {
-        $encoded = $request->input('q');
-        $query = $encoded ? base64_decode($encoded) : null;
-        $data = $this->getData($query);
-        return view('main.home', ['data' => $data]);
+        $query = $this->decodeSearchQuery($request->input('q'));
+        $postsQuery = $this->getData($query);
+
+        $featuredPost = (clone $postsQuery)->featured()->first();
+        if (!$featuredPost) {
+            $featuredPost = (clone $postsQuery)->first();
+        }
+
+        $topStories = (clone $postsQuery)
+            ->when($featuredPost, function ($builder) use ($featuredPost) {
+                return $builder->where('id', '!=', $featuredPost->id);
+            })
+            ->take(3)
+            ->get();
+
+        $latestPosts = (clone $postsQuery)->take(8)->get();
+
+        $popularPosts = newpost_details::published()
+            ->orderByDesc('views_count')
+            ->orderByDesc('created_date')
+            ->take(5)
+            ->get();
+
+        $categoryStats = newpost_details::published()
+            ->select('category', DB::raw('COUNT(*) as total'))
+            ->whereNotNull('category')
+            ->groupBy('category')
+            ->orderByDesc('total')
+            ->take(8)
+            ->get();
+
+        return view('main.home', compact(
+            'query',
+            'featuredPost',
+            'topStories',
+            'latestPosts',
+            'popularPosts',
+            'categoryStats'
+        ));
     }
 
     public function getData($query = null)
     {
-        $posts = DB::table('newpost_details')
-            ->select('*')
-            ->limit(6);
-
-        if (!empty($query)) {
-            $posts->where(function ($q) use ($query) {
-                $q->where('title', 'LIKE', "%{$query}%")
-                    ->orWhere('description', 'LIKE', "%{$query}%");
+        return newpost_details::query()
+            ->published()
+            ->recent()
+            ->when(!empty($query), function ($posts) use ($query) {
+                $posts->where(function ($q) use ($query) {
+                    $q->where('title', 'LIKE', "%{$query}%")
+                        ->orWhere('description', 'LIKE', "%{$query}%")
+                        ->orWhere('category', 'LIKE', "%{$query}%");
+                });
             });
+    }
+
+    private function decodeSearchQuery(?string $encoded): ?string
+    {
+        if (empty($encoded)) {
+            return null;
         }
 
-        return $posts->get();
+        $decoded = base64_decode($encoded, true);
+        if ($decoded === false) {
+            $decoded = urldecode($encoded);
+        }
+
+        $decoded = trim((string) $decoded);
+        return $decoded === '' ? null : $decoded;
     }
 
     public function show($id)
