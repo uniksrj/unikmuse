@@ -169,7 +169,16 @@ class Blogmain extends Controller
     public function show($id)
     {
         try {
-            $post = newpost_details::published()->findOrFail($id);
+            if (is_numeric($id)) {
+                $post = newpost_details::published()->findOrFail($id);
+
+                // Keep old ID URLs working, but redirect to canonical slug URL.
+                if (!empty($post->slug)) {
+                    return redirect()->route('post.show', ['slugOrId' => $post->slug], 301);
+                }
+            } else {
+                $post = newpost_details::published()->where('slug', $id)->firstOrFail();
+            }
 
             try {
                 $this->trackView($post);
@@ -227,6 +236,30 @@ class Blogmain extends Controller
         } catch (\Exception $e) {
             abort(404, 'Post not found');
         }
+    }
+
+    public function sitemap()
+    {
+        $posts = newpost_details::published()
+            ->select('id', 'slug', 'updated_at', 'created_at')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $staticPages = [
+            ['loc' => url('/'), 'lastmod' => now()->toDateString(), 'priority' => '1.0'],
+            ['loc' => url('/blog'), 'lastmod' => now()->toDateString(), 'priority' => '0.9'],
+            ['loc' => url('/categories'), 'lastmod' => now()->toDateString(), 'priority' => '0.8'],
+            ['loc' => url('/about'), 'lastmod' => now()->toDateString(), 'priority' => '0.6'],
+            ['loc' => url('/contact'), 'lastmod' => now()->toDateString(), 'priority' => '0.6'],
+            ['loc' => url('/privacy-policy'), 'lastmod' => now()->toDateString(), 'priority' => '0.3'],
+            ['loc' => url('/terms-conditions'), 'lastmod' => now()->toDateString(), 'priority' => '0.3'],
+            ['loc' => url('/disclaimer'), 'lastmod' => now()->toDateString(), 'priority' => '0.3'],
+        ];
+
+        $categories = array_keys($this->defaultCategories);
+        $xml = view('sitemap.xml', compact('posts', 'staticPages', 'categories'));
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
     }
 
     /**
@@ -320,7 +353,7 @@ class Blogmain extends Controller
             ],
             [
                 'name' => 'Lifestyle',
-                'post_count' => newpost_details::where('category', 'lifestyle')->count(),
+                'post_count' => newpost_details::where('category', 'life-style')->count(),
                 'description' => 'Daily life, wellness, habits, and personal development',
                 'reading_time' => '6',
                 'slug' => 'life-style',
@@ -391,12 +424,25 @@ class Blogmain extends Controller
         ];
 
         $featuredCategories = array_slice($categories, 0, 4);
+        $trendingCategories = array_slice($categories, 0, 2);
+        $latestPostsByCategory = [];
+
+        foreach ($trendingCategories as $category) {
+            $latestPostsByCategory[$category['slug']] = newpost_details::published()
+                ->where('category', $category['slug'])
+                ->latest()
+                ->take(3)
+                ->get();
+        }
+
         return view('categories.categoryPage', [
             'categories' => $categories,
             'featuredCategories' => $featuredCategories,
+            'trendingCategories' => $trendingCategories,
+            'latestPostsByCategory' => $latestPostsByCategory,
             'totalPosts' => newpost_details::count(),
             'totalAuthors' => 1,
-            'totalViews' =>  PostView::totalViews(null),
+            'totalViews' =>  PostView::count(),
             'totalViewsByMonth' =>  PostView::totalViewsByMonth( date('m'), date('Y')),
         ]);
     }

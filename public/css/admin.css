@@ -1,4 +1,8 @@
 
+body {
+    background-color: #e9f2ff !important;
+}
+
 .admin-container {
     display: flex;
     min-height: 100vh;

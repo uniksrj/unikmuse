@@ -11,7 +11,7 @@
     <meta property="og:title" content="Terms & Conditions - Unik Muse">
     <meta property="og:description"
         content="Official Terms & Conditions for using Unik Muse. Understand your rights and responsibilities as a user.">
-    <meta property="og:image" content="{{ asset('assets/terms-banner.jpg') }}">
+    <meta property="og:image" content="{{ asset('assets/snow.webp') }}">
     <meta property="og:type" content="website">
     <link rel="canonical" href="{{ url()->current() }}">
 
@@ -28,7 +28,7 @@
             "name": "Unik Muse",
             "logo": {
                 "@type": "ImageObject",
-                "url": "{{ asset('assets/logo.png') }}"
+                "url": "{{ asset('assets/unikmusewhite.webp') }}"
             }
         },
         "datePublished": "{{ date('Y-m-d') }}",
@@ -1049,3 +1049,4 @@
     </script>
 </body>
 </html>
+

@@ -7,7 +7,7 @@
 <div class="myblock">
     <nav class="navbar" style="justify-content: space-around !important; padding: 20px;">
         <div class="logo-text">
-                    <img src="{{ asset('assets/unikmusewhite.png') }}" alt="Unik Muse">
+                    <img src="{{ asset('assets/unikmusewhite.webp') }}" alt="Unik Muse">
                 </div>
         <div class="s_block">
             <input class="form-control" type="search" placeholder="Search" aria-label="Search">

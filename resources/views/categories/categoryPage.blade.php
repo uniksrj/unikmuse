@@ -7,6 +7,13 @@
     <title>All Categories - Browse Topics | Unik Muse</title>
     <meta name="description"
         content="Explore all content categories including Technology, Travel, Lifestyle, News, Productivity, and more. Find articles by topic.">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:title" content="All Categories - Browse Topics | Unik Muse">
+    <meta property="og:description"
+        content="Explore all content categories and find articles by topic on Unik Muse.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('assets/snow.webp') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> --}}
@@ -138,15 +145,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                @foreach (array_slice($categories, 0, 2) as $category)
-                    @php
-                        $latestPosts = \App\Models\newpost_details::where('category', $category['slug'])
-                            ->published()
-                            ->latest()
-                            ->take(3)
-                            ->get();
-                    @endphp
-
+                @foreach (($trendingCategories ?? array_slice($categories, 0, 2)) as $category)
                     <div class="bg-white rounded-xl shadow-md border border-unik-border p-6">
                         <div class="flex items-center gap-4 mb-6">
                             <div
@@ -161,7 +160,7 @@
 
                         <div class="space-y-4 mb-6">
                             <h4 class="font-semibold text-unik-dark">Latest Articles:</h4>
-                            @foreach ($latestPosts as $post)
+                            @foreach (($latestPostsByCategory[$category['slug']] ?? collect()) as $post)
                                 <a href="{{ route('post.show', $post->id) }}"
                                     class="block p-3 rounded-lg border border-unik-border hover:border-unik-primary hover:bg-unik-primary/5 transition-colors">
                                     <div class="flex items-center justify-between">

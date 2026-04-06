@@ -11,7 +11,7 @@
     <meta property="og:title" content="{{ $meta_title ?? 'Unik Muse - Thoughts That Inspire' }}">
     <meta property="og:description"
         content="{{ $meta_description ?? 'Explore inspiring thoughts, blogs, guides, and stories on Unik Muse.' }}">
-    <meta property="og:image" content="{{ asset('assets/snow.jpg') }}">
+    <meta property="og:image" content="{{ asset('assets/snow.webp') }}">
     <meta property="og:type" content="website">
 
     {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"

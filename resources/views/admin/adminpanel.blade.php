@@ -377,28 +377,28 @@
                 <div class="stat-icon">
                     <i class="fas fa-newspaper"></i>
                 </div>
-                <div class="stat-number">{{ count($details_arr) }}</div>
+                <div class="stat-number">{{ number_format($stats['posts'] ?? 0) }}</div>
                 <div class="stat-label">Total Posts</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-eye"></i>
                 </div>
-                <div class="stat-number">1,234</div>
+                <div class="stat-number">{{ number_format($stats['views'] ?? 0) }}</div>
                 <div class="stat-label">Total Views</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-comments"></i>
                 </div>
-                <div class="stat-number">56</div>
+                <div class="stat-number">{{ number_format($stats['comments'] ?? 0) }}</div>
                 <div class="stat-label">Comments</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-share"></i>
                 </div>
-                <div class="stat-number">89</div>
+                <div class="stat-number">{{ number_format($stats['shares'] ?? 0) }}</div>
                 <div class="stat-label">Social Shares</div>
             </div>
         </div>

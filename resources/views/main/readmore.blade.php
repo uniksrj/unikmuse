@@ -17,6 +17,7 @@
             ),
             120,
         ) }}">
+    <link rel="canonical" href="{{ route('post.show', ['slugOrId' => $post->slug ?: $post->id]) }}">
 
     <!-- Open Graph for Social Sharing -->
     <meta property="og:title" content="{{ $post->title }}">
@@ -40,7 +41,7 @@
         "image": "{{ asset('storage/' . $featuredImage) }}",
         "author": {
             "@type": "Person",
-            "name": "{{ $post->author->name ?? 'Admin' }}"
+            "name": "{{ $post->name ?? 'Admin' }}"
         },
         "datePublished": "{{ $post->created_date }}",
         "description": "{{ Str::limit(strip_tags($post->description), 160) }}"
@@ -74,7 +75,7 @@
                 <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-sm md:text-base">
                     <div class="flex items-center gap-2">
                         <i class="fas fa-user"></i>
-                        <span>By {{ $post->author->name ?? 'Admin' }}</span>
+                        <span>By {{ $post->name ?? 'Admin' }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="far fa-calendar"></i>
@@ -263,7 +264,7 @@
                 <!-- Comments Section -->
                 <section class="bg-white rounded-unik-lg shadow-unik-md p-6 md:p-8 border border-unik-border mt-12">
                     <h2 class="text-2xl md:text-3xl font-bold text-unik-primary mb-8 font-serif">Comments
-                        ({{ 'Comment data here' }})</h2>
+                        ({{ $comments->count() }})</h2>
 
                     <!-- Comment Form -->
                     <div class="bg-unik-light/30 rounded-unik-lg p-6 mb-8">
@@ -440,7 +441,7 @@
         window.postData = {
             title: "{{ $post->title }}",
             readingTime: {{ $readingTime ?? 1 }},
-            viewCount: {{ $viewStats->total ?? 0 }}
+            viewCount: {{ $viewStats['total'] ?? 0 }}
         };
     </script>
 </body>

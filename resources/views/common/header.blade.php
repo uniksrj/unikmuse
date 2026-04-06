@@ -19,9 +19,9 @@
                     <label for="search-input" class="visually-hidden">Search Blog</label>
                     <div class="relative w-full">
                         <input id="search-input" type="text" name="q" placeholder="Search articles..." required
-                            class="w-full rounded-unik-lg px-4 py-2 hidden md:block border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
+                            class="w-full rounded-unik-lg px-4 py-2 pr-14 hidden md:block border border-unik-border focus:outline-none focus:ring-2 focus:ring-unik-primary focus:border-transparent unik-text-dark">
                         <button type="submit"
-                            class="bg-[#4E56C0] absolute hidden md:block right-2 top-1/2 transform-translate-y-1/2 text-white px-4 py-1 rounded-lg transition-colors"
+                            class="bg-[#4E56C0] absolute hidden md:flex items-center justify-center right-2 top-1/2 -translate-y-1/2 text-white px-3 py-1 rounded-lg transition-colors"
                             aria-label="Search">
                             <i class="fas fa-search hover:text-unik-accent"></i>
                         </button>
@@ -69,7 +69,8 @@
                     Categories <i class="fas fa-chevron-down text-sm"></i>
                 </a>
 
-                <ul id="category-menu" class="dropdown-menu_category relative md:absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 hidden md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
+                <ul id="category-menu"
+                    class="dropdown-menu_category relative md:absolute left-0 mt-0 w-full md:w-56 bg-unik-primary rounded-unik-lg shadow-unik-lg z-50 py-2 hidden md:opacity-0 md:invisible md:group-hover:opacity-100 md:group-hover:visible transition-all duration-300"
                     aria-label="Submenu">
                     <li><a href="{{ route('category.show', 'technology') }}"
                             class="block px-4 py-3 text-unik-primary hover:bg-unik-light/20 transition-colors">Technology</a>

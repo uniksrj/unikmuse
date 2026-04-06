@@ -6,6 +6,7 @@ use App\Models\newpost_details;
 use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Admin extends Controller
@@ -20,6 +21,26 @@ class Admin extends Controller
     {
 
         $news_arr = DB::table('newpost_details')->get();
+        $totalPosts = $news_arr->count();
+        $totalViews = Schema::hasTable('post_views')
+            ? DB::table('post_views')->count()
+            : (Schema::hasColumn('newpost_details', 'views_count') ? DB::table('newpost_details')->sum('views_count') : 0);
+
+        $totalComments = Schema::hasTable('comments')
+            ? DB::table('comments')->count()
+            : (Schema::hasColumn('newpost_details', 'comments_count') ? DB::table('newpost_details')->sum('comments_count') : 0);
+
+        $totalShares = Schema::hasColumn('newpost_details', 'shares_count')
+            ? DB::table('newpost_details')->sum('shares_count')
+            : 0;
+
+        $stats = [
+            'posts' => (int) $totalPosts,
+            'views' => (int) $totalViews,
+            'comments' => (int) $totalComments,
+            'shares' => (int) $totalShares,
+        ];
+
         $message = '';
         if ($request->session()->get('status') !== 'active') {
             $request->session()->flash('message', 'Hello Admin Welcome here');
@@ -36,7 +57,7 @@ class Admin extends Controller
         }
         $request->session()->put('name', 'Suraj');
         $data = $request->session()->all();
-        return view('admin/adminpanel', ['details_arr' => $news_arr], compact('message'));
+        return view('admin/adminpanel', ['details_arr' => $news_arr, 'stats' => $stats], compact('message'));
     }
 
     public function addpost()

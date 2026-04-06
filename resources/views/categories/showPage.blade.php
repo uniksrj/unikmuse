@@ -29,7 +29,7 @@
             "name": "Unik Muse",
             "logo": {
                 "@type": "ImageObject",
-                "url": "{{ asset('assets/logo.png') }}"
+                "url": "{{ asset('assets/unikmusewhite.webp') }}"
             }
         },
         "mainEntity": {
@@ -621,3 +621,5 @@
 </body>
 
 </html>
+
+

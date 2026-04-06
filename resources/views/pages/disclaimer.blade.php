@@ -11,7 +11,7 @@
     <meta property="og:title" content="Disclaimer - Unik Muse">
     <meta property="og:description"
         content="Important Disclaimer for Unik Muse content. Understand the scope and limitations of information provided.">
-    <meta property="og:image" content="{{ asset('assets/disclaimer-banner.jpg') }}">
+    <meta property="og:image" content="{{ asset('assets/snow.webp') }}">
     <meta property="og:type" content="website">
     <link rel="canonical" href="{{ url()->current() }}">
 
@@ -28,7 +28,7 @@
             "name": "Unik Muse",
             "logo": {
                 "@type": "ImageObject",
-                "url": "{{ asset('assets/logo.png') }}"
+                "url": "{{ asset('assets/unikmusewhite.webp') }}"
             }
         },
         "datePublished": "{{ date('Y-m-d') }}",

@@ -8,15 +8,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unik Muse Blog - Insights, Stories, Trends and Expert Opinions</title>
     <meta name="description"
         content="Discover expert insights, technology updates, travel guides, news breakdowns, and inspirational stories. Explore curated articles across multiple categories including Tech, Travel, Lifestyle, Creativity, and Productivity.">
+    <link rel="canonical" href="{{ url()->current() }}">
 
-    <meta property="og:title" content="Unik Muse Blog – Insights, Stories, Trends & Expert Opinions">
+    <meta property="og:title" content="Unik Muse Blog - Insights, Stories, Trends and Expert Opinions">
     <meta property="og:description"
         content="Discover expert insights, technology updates, travel guides, news breakdowns, and inspirational stories.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:image" content="{{ asset('images/blog-og-image.jpg') }}">
+    <meta property="og:image" content="{{ asset('assets/snow.webp') }}">
 
     <script type="application/ld+json">
     {
@@ -33,7 +35,7 @@
     }
     </script>
 
-    <title>Unik Muse Blog – Insights, Stories, Trends & Expert Opinions</title>
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @vite('resources/js/blog.js')
 </head>
@@ -439,7 +441,7 @@
                             "name": "Unik Muse",
                             "logo": {
                                 "@type": "ImageObject",
-                                "url": "{{ url('/') }}/logo.png"
+                                "url": "{{ asset('assets/unikmusewhite.webp') }}"
                             }
                         }
                     };
@@ -455,3 +457,4 @@
 </body>
 
 </html>
+

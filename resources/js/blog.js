@@ -37,20 +37,19 @@ $(document).ready(function () {
 
     }, 5000);
 
-    $('.loader-overlay').fadeIn();
+    $('.loader-overlay').fadeIn(100);
 
     setTimeout(function () {
-        $('.loader-overlay').fadeOut(1500);
-    }, 5000);
+        $('.loader-overlay').fadeOut(300);
+    }, 800);
     $(window).on('beforeunload', function () {
         $('.loader-overlay').show();
     });
 
     $(window).on('load', function () {
-        console.log("Window loaded, stopping loader...");
         setTimeout(function () {
-            $('.loader-overlay').fadeOut(1500);
-        }, 500);
+            $('.loader-overlay').fadeOut(250);
+        }, 50);
     });
 
     $('#loadMore').click(function () {
