@@ -11,6 +11,7 @@ This project now includes an automated AI blog generation pipeline with manual r
 - Saves posts as `draft` in `newpost_details`.
 - Skips duplicates by title/source URL.
 - Requires admin review before publish.
+- During publish, draft is rewritten with a final SEO optimization pass (OpenAI).
 
 ### Setup
 1. Run migrations:
@@ -24,6 +25,7 @@ php artisan migrate
 ```env
 OPENAI_API_KEY=your_key_here
 OPENAI_MODEL=gpt-4o-mini
+OPENAI_PUBLISH_MODEL=gpt-4o-mini
 OPENAI_BASE_URL=https://api.openai.com/v1
 AI_BLOG_DEFAULT_LIMIT=5
 ```
@@ -46,4 +48,4 @@ Set server cron to run Laravel scheduler every minute:
 ### Admin review flow
 - `GET /admin/drafts` to review all draft blogs.
 - Preview each draft.
-- Publish changes status from `draft` to `published`.
+- Publish triggers final SEO rewrite, then changes status from `draft` to `published`.

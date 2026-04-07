@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\newpost_details;
 use App\Services\ImageProcessingService;
+use App\Services\OpenAiBlogGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +12,10 @@ use Illuminate\Support\Str;
 
 class Admin extends Controller
 {
-    public function __construct(private ImageProcessingService $imgService)
+    public function __construct(
+        private ImageProcessingService $imgService,
+        private OpenAiBlogGeneratorService $openAiGenerator
+    )
     {
         $this->middleware('auth');
         $this->middleware('web');
@@ -92,16 +96,39 @@ class Admin extends Controller
     {
         $post = newpost_details::query()->findOrFail($id);
 
-        $post->update([
+        $optimized = $this->openAiGenerator->optimizeForPublishing(
+            (string) $post->title,
+            (string) $post->description,
+            (string) ($post->category ?? 'technology')
+        );
+
+        $updateData = [
             'status' => 'published',
             'is_published' => 1,
             'active' => 1,
             'created_date' => $post->created_date ?? now(),
-        ]);
+        ];
+
+        if ($optimized !== null) {
+            $updateData['title'] = $optimized['title'];
+            $updateData['description'] = $optimized['content'];
+            $updateData['meta_title'] = Str::limit($optimized['title'], 255, '');
+            $updateData['meta_description'] = $optimized['meta_description'];
+            $updateData['word_count'] = str_word_count(strip_tags($optimized['content']));
+            $updateData['reading_time'] = (string) max(1, (int) ceil(((int) $updateData['word_count']) / 200));
+            $updateData['table_of_contents'] = $this->generateTOC($optimized['content']);
+        }
+
+        $post->update($updateData);
 
         return redirect()
             ->route('admin.drafts')
-            ->with('success', 'Draft published successfully.');
+            ->with(
+                $optimized !== null ? 'success' : 'warning',
+                $optimized !== null
+                    ? 'Draft optimized and published successfully.'
+                    : 'Draft published, but final AI optimization was skipped.'
+            );
     }
 
     public function addpost()
@@ -340,6 +367,40 @@ class Admin extends Controller
 
     private function generateTOC(string $content): string
     {
+        if (Str::contains(Str::lower($content), '<h2') || Str::contains(Str::lower($content), '<h3') || Str::contains(Str::lower($content), '<h4')) {
+            $dom = new \DOMDocument();
+            libxml_use_internal_errors(true);
+            $dom->loadHTML('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">' . $content);
+            $xpath = new \DOMXPath($dom);
+            $nodes = $xpath->query('//h2 | //h3 | //h4');
+
+            $tocFromHtml = [];
+            $index = 1;
+
+            if ($nodes !== false) {
+                foreach ($nodes as $node) {
+                    $title = trim((string) $node->textContent);
+                    if ($title === '') {
+                        continue;
+                    }
+
+                    $tocFromHtml[] = [
+                        'id' => 'section-' . $index,
+                        'title' => $title,
+                        'level' => (int) str_replace('h', '', strtolower($node->nodeName)),
+                        'slug' => Str::slug($title),
+                        'order' => $index,
+                    ];
+
+                    $index++;
+                }
+            }
+
+            if (!empty($tocFromHtml)) {
+                return json_encode($tocFromHtml);
+            }
+        }
+
         $headings = [];
         $lines = explode("\n", $content);
 

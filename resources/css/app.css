@@ -195,15 +195,30 @@
         /* text-xl */
     }
 
-    /* Link styles - FIXED */
+    /* Link styles */
     a {
-        /* color: var(--unik-text-light) !important; */
+        color: inherit;
         text-decoration: none !important;
         transition: color 0.2s ease-in-out;
     }
 
     a:hover {
-        color: #0013a0 !important;
+        color: inherit;
+    }
+
+    /* Content links stay visible and intentional */
+    .content-body a,
+    .prose a,
+    .article-content a {
+        color: var(--unik-primary);
+        text-decoration: underline !important;
+        text-underline-offset: 2px;
+    }
+
+    .content-body a:hover,
+    .prose a:hover,
+    .article-content a:hover {
+        color: var(--unik-secondary);
     }
 
     /* Specific link styles for different contexts */

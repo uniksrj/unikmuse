@@ -39,7 +39,7 @@
 
     .site-header-wrap .header-link:hover,
     .site-header-wrap .header-link:focus-visible {
-        color: #ffffff !important;
+        color: #ff0000 !important;
     }
 
     .site-header-wrap .header-link-active {
@@ -54,6 +54,31 @@
     .site-header-wrap .dropdown-panel a:hover {
         color: #0f172a !important;
         background-color: #e2e8f0;
+    }
+
+    .site-header-wrap .desktop-category-item .dropdown-panel {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(6px);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    }
+
+    .site-header-wrap .desktop-category-item::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 100%;
+        width: 100%;
+        height: 10px;
+    }
+
+    .site-header-wrap .desktop-category-item:hover .dropdown-panel,
+    .site-header-wrap .desktop-category-item:focus-within .dropdown-panel {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
     }
 
     .site-header-wrap .brand-title,
@@ -110,13 +135,13 @@
             <ul class="flex flex-wrap items-center gap-1 lg:gap-2">
                 @foreach ($mainLinks as $link)
                     @if ($link['label'] === 'Categories')
-                        <li class="group relative">
+                        <li class="group relative desktop-category-item">
                             <a href="{{ $link['url'] }}"
                                class="header-link inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition {{ $link['active'] ? 'header-link-active' : '' }}"
                                aria-current="{{ $link['active'] ? 'page' : 'false' }}">
                                 {{ $link['label'] }} <i class="fas fa-chevron-down text-[10px]"></i>
                             </a>
-                            <div class="dropdown-panel invisible absolute left-0 top-[110%] z-20 w-72 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
+                            <div class="dropdown-panel absolute left-0 top-full z-20 w-72 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
                                 @foreach ($categoryLinks as $category)
                                     <a href="{{ route('category.show', $category['slug']) }}" class="block rounded-lg px-3 py-2 text-sm font-medium transition">
                                         {{ $category['label'] }}
