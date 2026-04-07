@@ -19,23 +19,27 @@ class Admin extends Controller
 
     public function index(Request $request)
     {
+        $posts = newpost_details::query()->orderByDesc('created_at')->get();
 
-        $news_arr = DB::table('newpost_details')->get();
-        $totalPosts = $news_arr->count();
         $totalViews = Schema::hasTable('post_views')
             ? DB::table('post_views')->count()
-            : (Schema::hasColumn('newpost_details', 'views_count') ? DB::table('newpost_details')->sum('views_count') : 0);
+            : (Schema::hasColumn('newpost_details', 'views_count') ? (int) DB::table('newpost_details')->sum('views_count') : 0);
 
         $totalComments = Schema::hasTable('comments')
             ? DB::table('comments')->count()
-            : (Schema::hasColumn('newpost_details', 'comments_count') ? DB::table('newpost_details')->sum('comments_count') : 0);
+            : (Schema::hasColumn('newpost_details', 'comments_count') ? (int) DB::table('newpost_details')->sum('comments_count') : 0);
 
         $totalShares = Schema::hasColumn('newpost_details', 'shares_count')
-            ? DB::table('newpost_details')->sum('shares_count')
+            ? (int) DB::table('newpost_details')->sum('shares_count')
             : 0;
 
+        $draftCount = newpost_details::query()->draft()->count();
+        $publishedCount = newpost_details::query()->published()->count();
+
         $stats = [
-            'posts' => (int) $totalPosts,
+            'posts' => (int) $posts->count(),
+            'published' => (int) $publishedCount,
+            'drafts' => (int) $draftCount,
             'views' => (int) $totalViews,
             'comments' => (int) $totalComments,
             'shares' => (int) $totalShares,
@@ -55,9 +59,49 @@ class Admin extends Controller
                 $request->session()->put('message_shown', true);
             }
         }
+
         $request->session()->put('name', 'Suraj');
-        $data = $request->session()->all();
-        return view('admin/adminpanel', ['details_arr' => $news_arr, 'stats' => $stats], compact('message'));
+
+        return view('admin/adminpanel', [
+            'details_arr' => $posts,
+            'stats' => $stats,
+            'message' => $message,
+        ]);
+    }
+
+    public function drafts(Request $request)
+    {
+        $drafts = newpost_details::query()
+            ->draft()
+            ->orderByDesc('updated_at')
+            ->paginate(12);
+
+        return view('admin.drafts', compact('drafts'));
+    }
+
+    public function previewDraft(int $id)
+    {
+        $post = newpost_details::query()->findOrFail($id);
+        $wordCount = str_word_count(strip_tags($post->description ?? ''));
+        $readingTime = max(1, (int) ceil($wordCount / 200));
+
+        return view('admin.draft-preview', compact('post', 'wordCount', 'readingTime'));
+    }
+
+    public function publishDraft(int $id)
+    {
+        $post = newpost_details::query()->findOrFail($id);
+
+        $post->update([
+            'status' => 'published',
+            'is_published' => 1,
+            'active' => 1,
+            'created_date' => $post->created_date ?? now(),
+        ]);
+
+        return redirect()
+            ->route('admin.drafts')
+            ->with('success', 'Draft published successfully.');
     }
 
     public function addpost()
@@ -71,8 +115,9 @@ class Admin extends Controller
             $validated = $request->validate([
                 'title' => 'required|max:255',
                 'desc' => 'required',
-                'file' => 'required|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
+                'file' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
                 'category' => 'nullable|string',
+                'source_url' => 'nullable|url|max:2000',
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
                 'featured' => 'boolean',
@@ -82,91 +127,98 @@ class Admin extends Controller
                 'table_of_contents' => 'nullable|json',
                 'reading_time' => 'nullable|integer',
                 'word_count' => 'nullable|integer',
-
+                'status' => 'nullable|in:draft,published',
             ]);
+
             if (empty($validated['table_of_contents'])) {
                 $validated['table_of_contents'] = $this->generateTOC($validated['desc']);
             }
 
-            if (empty($validated['reading_time'])) {
+            if (empty($validated['reading_time']) || empty($validated['word_count'])) {
                 $wordCount = str_word_count(strip_tags($validated['desc']));
                 $validated['word_count'] = $wordCount;
                 $validated['reading_time'] = ceil($wordCount / 200);
             }
+
+            $status = $request->boolean('draft') || (($validated['status'] ?? 'published') === 'draft')
+                ? 'draft'
+                : 'published';
 
             $data = [
                 'title' => $validated['title'],
                 'description' => $validated['desc'],
                 'created_date' => now(),
                 'category' => $validated['category'] ?? null,
-                'slug' => $validated['slug'] ?? null,
+                'source_url' => $validated['source_url'] ?? null,
+                'slug' => $validated['slug'] ?? Str::slug($validated['title']) . '-' . Str::random(5),
                 'meta_title' => $validated['meta_title'] ?? null,
-                'tags' => json_encode($validated['tags']) ?? null,
+                'tags' => !empty($validated['tags']) ? json_encode($validated['tags']) : null,
                 'meta_description' => $validated['meta_description'] ?? null,
                 'table_of_contents' => $validated['table_of_contents'],
-                'reading_time' => $validated['reading_time'],
+                'reading_time' => (string) $validated['reading_time'],
                 'word_count' => $validated['word_count'],
                 'active' => 1,
                 'is_featured' => $validated['featured'] ?? 0,
+                'is_published' => $status === 'published' ? 1 : 0,
+                'status' => $status,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
 
-            
-
             if ($request->hasFile('file')) {
-
                 $file = $request->file('file');
 
                 if (!$file->isValid()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Uploaded file is corrupted or invalid.'
+                        'message' => 'Uploaded file is corrupted or invalid.',
                     ], 422);
                 }
 
                 $processed = $this->imgService->processImage($file->getPathname(), [
                     'quality' => 80,
                     'formats' => ['jpeg', 'webp'],
-                    'sizes' => ['thumb', 'medium', 'large', 'original']
+                    'sizes' => ['thumb', 'medium', 'large', 'original'],
                 ]);
+
                 $storagePaths = [];
                 foreach ($processed as $size => $formats) {
                     foreach ($formats as $format => $path) {
                         $storagePaths[$size][$format] = $this->imgService->saveToStorage($path, 'uploads');
                     }
                 }
-                // $fileName = time() . '_' . $file->getClientOriginalName();
-                // $destination = storage_path('app/public/uploads/' . $fileName);
-                // copy($compressedPath, $destination);
+
                 $data['file_path'] = json_encode($storagePaths);
             } else {
                 $data['file_path'] = null;
             }
+
             $inserted = DB::table('newpost_details')->insert($data);
 
             if (!$inserted) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Database error: Failed to save post.'
+                    'message' => 'Database error: Failed to save post.',
                 ], 500);
             }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Post created successfully!',
+                'message' => $status === 'draft' ? 'Draft saved successfully!' : 'Post created successfully!',
                 'reset_form' => true,
-                'redirect' => '/admin'
+                'redirect' => '/admin',
+                'drafts' => newpost_details::query()->draft()->count(),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error occurred.',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unexpected error: ' . $e->getMessage()
+                'message' => 'Unexpected error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -174,11 +226,6 @@ class Admin extends Controller
     public function view_editPage($id)
     {
         $post = DB::table('newpost_details')->where('id', $id)->firstOrFail();
-        // echo "<pre>";
-        // print_r($post);
-        // echo "</pre>";
-        // return ;
-        // $item = DB::findOrFail($id);
         return view('admin.editpage', compact('post'));
     }
 
@@ -188,98 +235,94 @@ class Admin extends Controller
             $validated = $request->validate([
                 'title' => 'required|max:255',
                 'desc' => 'required',
-                'file' => 'required|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
+                'file' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
                 'category' => 'nullable|string',
+                'source_url' => 'nullable|url|max:2000',
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
                 'featured' => 'boolean',
                 'meta_title' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:500',
                 'slug' => 'nullable|string|max:255',
-
             ]);
-            
-            $isSlugExists = newpost_details::checkSlugExists($validated['slug'], $id);
+
+            $isSlugExists = !empty($validated['slug'])
+                ? newpost_details::checkSlugExists($validated['slug'], $id)
+                : false;
+
             if ($isSlugExists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'The slug has already been taken.'
+                    'message' => 'The slug has already been taken.',
                 ], 422);
             }
+
+            $post = DB::table('newpost_details')
+                ->select('file_path', 'source_url')
+                ->where('id', $id)
+                ->first();
 
             $data = [
                 'title' => $validated['title'],
                 'description' => $validated['desc'],
                 'category' => $validated['category'] ?? null,
+                'source_url' => $validated['source_url'] ?? ($post->source_url ?? null),
                 'slug' => $validated['slug'] ?? null,
                 'meta_title' => $validated['meta_title'] ?? null,
-                'tags' => json_encode($validated['tags']) ?? null,
+                'tags' => !empty($validated['tags']) ? json_encode($validated['tags']) : null,
                 'meta_description' => $validated['meta_description'] ?? null,
                 'is_featured' => $validated['featured'] ?? 0,
                 'updated_at' => now(),
             ];
-            $post = DB::table('newpost_details')
-                ->select('file_path')
-                ->where('id', $id)
-                ->first();
 
             if ($request->hasFile('file')) {
-
                 $file = $request->file('file');
 
                 if (!$file->isValid()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Uploaded file is corrupted or invalid.'
+                        'message' => 'Uploaded file is corrupted or invalid.',
                     ], 422);
                 }
 
                 $processed = $this->imgService->processImage($file->getPathname(), [
                     'quality' => 80,
                     'formats' => ['jpeg', 'webp'],
-                    'sizes' => ['thumb', 'medium', 'large', 'original']
+                    'sizes' => ['thumb', 'medium', 'large', 'original'],
                 ]);
+
                 $storagePaths = [];
                 foreach ($processed as $size => $formats) {
                     foreach ($formats as $format => $path) {
                         $storagePaths[$size][$format] = $this->imgService->saveToStorage($path, 'uploads');
                     }
                 }
+
                 $data['file_path'] = json_encode($storagePaths);
             } else {
-                if (!empty($post->file_path)) {
-                    $data['file_path'] = json_encode([$post->file_path]);
-                } else {
-                    $data['file_path'] = null;
-                }
+                $data['file_path'] = $post->file_path ?? null;
             }
 
             $affected = DB::table('newpost_details')
                 ->where('id', $id)
                 ->update($data);
 
-            if (!$affected) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Database error: Failed to update post.'
-                ], 500);
-            }
             return response()->json([
                 'success' => true,
-                'message' => 'Post Update successfully!',
+                'message' => 'Post updated successfully!',
                 'reset_form' => true,
-                'redirect' => '/admin'
+                'redirect' => '/admin',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error occurred.',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unexpected error: ' . $e->getMessage()
+                'message' => 'Unexpected error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -290,29 +333,39 @@ class Admin extends Controller
 
         if ($deleted) {
             return response()->json(['success' => 'Record deleted successfully']);
-        } else {
-            return response()->json(['error' => 'Error while deleting the record'], 500);
         }
+
+        return response()->json(['error' => 'Error while deleting the record'], 500);
     }
 
-    private function generateTOC($content)
+    private function generateTOC(string $content): string
     {
         $headings = [];
         $lines = explode("\n", $content);
 
-        foreach ($lines as $index => $line) {
+        foreach ($lines as $line) {
             $line = trim($line);
 
             if (preg_match('/^(#{2,4})\s+(.+)$/', $line, $matches)) {
-                $level = strlen($matches[1]);
                 $title = trim($matches[2]);
-
                 $headings[] = [
                     'id' => 'section-' . (count($headings) + 1),
                     'title' => $title,
-                    'level' => $level,
+                    'level' => strlen($matches[1]),
                     'slug' => Str::slug($title),
-                    'order' => count($headings) + 1
+                    'order' => count($headings) + 1,
+                ];
+                continue;
+            }
+
+            if (preg_match('/<h([2-4])[^>]*>(.*?)<\/h\1>/i', $line, $matches)) {
+                $title = trim(strip_tags($matches[2]));
+                $headings[] = [
+                    'id' => 'section-' . (count($headings) + 1),
+                    'title' => $title,
+                    'level' => (int) $matches[1],
+                    'slug' => Str::slug($title),
+                    'order' => count($headings) + 1,
                 ];
             }
         }

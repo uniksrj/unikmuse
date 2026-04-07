@@ -17,7 +17,6 @@ class Blogmain extends Controller
         'life-style' => 'Lifestyle',
         'digital-trends' => 'Digital Trends',
         'productivity' => 'Productivity',
-        'tutorials' => 'Tutorials',
         'news-updates' => 'News & Updates',
         'stories-experiences' => 'Stories & Experiences',
         'creativity-inspiration' => 'Creativity & Inspiration'
@@ -115,7 +114,6 @@ class Blogmain extends Controller
             'Lifestyle' => 0,
             'Digital Trends' => 0,
             'Productivity' => 0,
-            'Tutorials' => 0,
             'News & Updates' => 0,
             'Stories & Experiences' => 0,
             'Creativity & Inspiration' => 0
@@ -428,16 +426,6 @@ class Blogmain extends Controller
                 'icon' => 'check-double',
                 'icon_bg' => 'bg-amber-100',
                 'icon_color' => 'text-amber-600'
-            ],
-            [
-                'name' => 'Tutorials',
-                'post_count' => newpost_details::where('category', 'tutorials')->count(),
-                'description' => 'Step-by-step guides and how-to articles',
-                'reading_time' => '10',
-                'slug' => 'tutorials',
-                'icon' => 'graduation-cap',
-                'icon_bg' => 'bg-emerald-100',
-                'icon_color' => 'text-emerald-600'
             ],
             [
                 'name' => 'News & Updates',

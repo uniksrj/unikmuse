@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class newpost_details extends Model
@@ -20,17 +21,19 @@ class newpost_details extends Model
         'meta_keywords',
         'is_featured',
         'is_published',
+        'status',
         'description',
         'views_count',
         'comments_count',
         'category',
+        'source_url',
         'file_path',
         'active',
         'tags',
         'table_of_contents',
-        'reading_time',     
+        'reading_time',
         'word_count',
-
+        'created_date',
     ];
 
     protected $casts = [
@@ -43,7 +46,8 @@ class newpost_details extends Model
 
     protected $attributes = [
         'name' => 'Suraj',
-        'active' => 1
+        'active' => 1,
+        'status' => 'published',
     ];
 
     /**
@@ -67,9 +71,18 @@ class newpost_details extends Model
      */
     public function scopePublished($query)
     {
-        return $query->where('is_published', 1)
-            ->where('active', 1)
+        $query->where('active', 1)
             ->whereNotNull('created_date');
+
+        if (Schema::hasColumn($this->getTable(), 'status')) {
+            $query->where('status', 'published');
+        }
+
+        if (Schema::hasColumn($this->getTable(), 'is_published')) {
+            $query->where('is_published', 1);
+        }
+
+        return $query;
     }
 
     public function scopeFeatured($query)
@@ -143,6 +156,14 @@ class newpost_details extends Model
      */
     public function scopeDraft($query)
     {
+        if (Schema::hasColumn($this->getTable(), 'status')) {
+            return $query->where('status', 'draft');
+        }
+
+        if (Schema::hasColumn($this->getTable(), 'is_published')) {
+            return $query->where('is_published', 0);
+        }
+
         return $query->where('active', 0);
     }
 

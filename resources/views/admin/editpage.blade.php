@@ -562,7 +562,6 @@
                         'digital-trends' => 'Digital Trends',
                         'technology' => 'Technology',
                         'productivity' => 'Productivity',
-                        'tutorials' => 'Tutorials',
                         'news-updates' => 'News & Updates',
                         'stories-experiences' => 'Stories & Experiences',
                         'creativity-inspiration' => 'Creativity & Inspiration',

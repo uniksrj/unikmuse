@@ -55,7 +55,7 @@
                 <i class="fas fa-plus-circle me-2"></i>Create New Post
             </h4>
 
-            <form id="addPost" method="POST" enctype="multipart/form-data">
+            <form id="addPost" method="POST" enctype="multipart/form-data" action="/saveData">
                 @csrf
 
                 <div class="form-section">
@@ -212,7 +212,6 @@
                         'digital-trends' => 'Digital Trends',
                         'technology' => 'Technology',
                         'productivity' => 'Productivity',
-                        'tutorials' => 'Tutorials',
                         'news-updates' => 'News & Updates',
                         'stories-experiences' => 'Stories & Experiences',
                         'creativity-inspiration' => 'Creativity & Inspiration',

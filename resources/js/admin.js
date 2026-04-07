@@ -486,6 +486,7 @@ $(document).ready(function () {
         var form = $('form[action="/saveData"]');
         var formData = new FormData(form[0]);
         formData.append('draft', true);
+        formData.append('status', 'draft');
 
         var draftBtn = $(this);
         var originalText = draftBtn.html();
@@ -493,7 +494,7 @@ $(document).ready(function () {
         draftBtn.prop('disabled', true);
 
         $.ajax({
-            url: '/saveDraft',
+            url: '/saveData',
             type: 'POST',
             data: formData,
             processData: false,
@@ -520,27 +521,33 @@ $(document).ready(function () {
     $('button:contains("Preview")').on('click', function (e) {
         e.preventDefault();
 
-        var formData = new FormData($('form[action="/saveData"]')[0]);
-        formData.append('preview', true);
+        var title = $('#postTitle').val() || 'Untitled Draft';
+        var content = $('#description').val() || '<p>No content yet.</p>';
+        var previewWindow = window.open('', '_blank');
 
-        $.ajax({
-            url: '/preview',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function (response) {
-                var previewWindow = window.open('', '_blank');
-                previewWindow.document.write(response);
-                previewWindow.document.close();
-            },
-            error: function () {
-                showAlert('error', 'Unable to generate preview');
-            }
-        });
+        if (!previewWindow) {
+            showAlert('error', 'Popup blocked. Please allow popups for preview.');
+            return;
+        }
+
+        previewWindow.document.write(`
+            <html>
+                <head>
+                    <title>Preview - ${title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; max-width: 900px; margin: 32px auto; padding: 0 16px; line-height: 1.7; }
+                        h1 { margin-bottom: 16px; }
+                        .meta { color: #666; margin-bottom: 24px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <div class="meta">Preview mode (not published)</div>
+                    <div>${content}</div>
+                </body>
+            </html>
+        `);
+        previewWindow.document.close();
     });
 
     $('#tagsSelect').select2({
@@ -579,7 +586,7 @@ $(document).ready(function () {
 
     $('#cancelBtn').click(function () {
         if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
-            window.location.href = '/admin/posts';
+            window.location.href = '/admin';
         }
     });
 
@@ -620,25 +627,6 @@ $(document).ready(function () {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
-    });
-    $('.delete_data').on('click', function (e) {
-        e.preventDefault();
-        let uni = $(this).data('id');
-        if (confirm('Are you sure you want to delete this record?')) {
-            $.ajax({
-                url: `/delete_data/${uni}`,
-                type: 'DELETE',
-                success: function (response) {
-                    $('#message').html('<div class="alert alert-success">' + response.success + '</div>');
-                    $(`button[data-id="${recordId}"]`).parent().remove();
-                },
-                error: function (err) {
-                    console.error(err);
-                    $('#message').html('<div class="alert alert-danger">Something Went Wrong</div>');
-                }
-            });
-        }
-
     });
 
     $(document).on('submit', '#editForm', function (e) {

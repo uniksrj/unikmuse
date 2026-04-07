@@ -105,13 +105,13 @@
             </a>
         </li>
         <li>
-            <a href="/admin/posts" class="{{ request()->is('admin/posts') ? 'active' : '' }}">
+            <a href="/admin/drafts" class="{{ request()->is('admin/drafts*') ? 'active' : '' }}">
                 <i class="fas fa-newspaper"></i>
-                <span class="menu-text">Manage Posts</span>
+                <span class="menu-text">Review Drafts</span>
             </a>
         </li>
         <li>
-            <a href="/admin/posts/create" class="{{ request()->is('admin/posts/create') ? 'active' : '' }}">
+            <a href="/adduser" class="{{ request()->is('adduser') ? 'active' : '' }}">
                 <i class="fas fa-plus-circle"></i>
                 <span class="menu-text">Add New Post</span>
             </a>

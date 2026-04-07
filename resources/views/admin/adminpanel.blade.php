@@ -1,5 +1,4 @@
 <script>
-    var deleteUrl = "{{ route('delete') }}";
     var csrfToken = "{{ csrf_token() }}";
 </script>
 @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -196,6 +195,17 @@
         box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
         color: white;
     }
+
+    .btn-publish {
+        background: linear-gradient(135deg, #1f8f4d, #27ae60);
+        color: white;
+    }
+
+    .btn-publish:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        color: white;
+    }
     
     #message {
         position: fixed;
@@ -382,24 +392,24 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
+                    <i class="fas fa-bullhorn"></i>
+                </div>
+                <div class="stat-number">{{ number_format($stats['published'] ?? 0) }}</div>
+                <div class="stat-label">Published</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-number">{{ number_format($stats['drafts'] ?? 0) }}</div>
+                <div class="stat-label">Drafts Pending Review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
                     <i class="fas fa-eye"></i>
                 </div>
                 <div class="stat-number">{{ number_format($stats['views'] ?? 0) }}</div>
                 <div class="stat-label">Total Views</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <div class="stat-number">{{ number_format($stats['comments'] ?? 0) }}</div>
-                <div class="stat-label">Comments</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-share"></i>
-                </div>
-                <div class="stat-number">{{ number_format($stats['shares'] ?? 0) }}</div>
-                <div class="stat-label">Social Shares</div>
             </div>
         </div>
 
@@ -454,14 +464,31 @@
                             <td>
                                 <small style="color: #6c757d;">
                                     <i class="far fa-calendar me-1"></i>
-                                    {{ \Carbon\Carbon::parse($value->created_date)->format('M d, Y') }}
+                                    {{ $value->created_date ? \Carbon\Carbon::parse($value->created_date)->format('M d, Y') : 'N/A' }}
                                 </small>
                             </td>
+                            @php
+                                $isPublished = (($value->status ?? null) === 'published') || ((int) ($value->is_published ?? 0) === 1);
+                            @endphp
                             <td>
-                                <span class="status-badge badge-published">Published</span>
+                                <span class="status-badge {{ $isPublished ? 'badge-published' : 'badge-draft' }}">
+                                    {{ $isPublished ? 'Published' : 'Draft' }}
+                                </span>
                             </td>
                             <td>
                                 <div style="display: flex; gap: 10px;">
+                                    @if (!$isPublished)
+                                    <a href="{{ route('admin.drafts.preview', $value->id) }}" class="btn-action btn-edit" target="_blank">
+                                        <i class="fas fa-eye me-1"></i>Preview
+                                    </a>
+                                    <form method="POST" action="{{ route('admin.drafts.publish', $value->id) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn-action btn-publish">
+                                            <i class="fas fa-upload me-1"></i>Publish
+                                        </button>
+                                    </form>
+                                    @endif
                                     <a href="/editPage/{{$value->id}}" class="btn-action btn-edit">
                                         <i class="fas fa-edit me-1"></i>Edit
                                     </a>
@@ -541,16 +568,12 @@
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
         button.disabled = true;
         
-        fetch(deleteUrl, {
-            method: 'POST',
+        fetch(`/delete_data/${postId}`, {
+            method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                id: postId
-            })
+            }
         })
         .then(response => response.json())
         .then(data => {
