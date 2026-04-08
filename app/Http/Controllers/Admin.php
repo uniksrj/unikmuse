@@ -145,6 +145,7 @@ class Admin extends Controller
                 'file' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
                 'category' => 'nullable|string',
                 'source_url' => 'nullable|url|max:2000',
+                'source_type' => 'nullable|in:rss,reddit,trends,manual',
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
                 'featured' => 'boolean',
@@ -177,6 +178,7 @@ class Admin extends Controller
                 'created_date' => now(),
                 'category' => $validated['category'] ?? null,
                 'source_url' => $validated['source_url'] ?? null,
+                'source_type' => $validated['source_type'] ?? 'manual',
                 'slug' => $validated['slug'] ?? Str::slug($validated['title']) . '-' . Str::random(5),
                 'meta_title' => $validated['meta_title'] ?? null,
                 'tags' => !empty($validated['tags']) ? json_encode($validated['tags']) : null,
@@ -191,6 +193,10 @@ class Admin extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+
+            if (!Schema::hasColumn('newpost_details', 'source_type')) {
+                unset($data['source_type']);
+            }
 
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
@@ -265,6 +271,7 @@ class Admin extends Controller
                 'file' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/webp|max:5120',
                 'category' => 'nullable|string',
                 'source_url' => 'nullable|url|max:2000',
+                'source_type' => 'nullable|in:rss,reddit,trends,manual',
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
                 'featured' => 'boolean',
@@ -285,7 +292,7 @@ class Admin extends Controller
             }
 
             $post = DB::table('newpost_details')
-                ->select('file_path', 'source_url')
+                ->select('file_path', 'source_url', 'source_type')
                 ->where('id', $id)
                 ->first();
 
@@ -294,6 +301,7 @@ class Admin extends Controller
                 'description' => $validated['desc'],
                 'category' => $validated['category'] ?? null,
                 'source_url' => $validated['source_url'] ?? ($post->source_url ?? null),
+                'source_type' => $validated['source_type'] ?? ($post->source_type ?? 'manual'),
                 'slug' => $validated['slug'] ?? null,
                 'meta_title' => $validated['meta_title'] ?? null,
                 'tags' => !empty($validated['tags']) ? json_encode($validated['tags']) : null,
@@ -301,6 +309,10 @@ class Admin extends Controller
                 'is_featured' => $validated['featured'] ?? 0,
                 'updated_at' => now(),
             ];
+
+            if (!Schema::hasColumn('newpost_details', 'source_type')) {
+                unset($data['source_type']);
+            }
 
             if ($request->hasFile('file')) {
                 $file = $request->file('file');

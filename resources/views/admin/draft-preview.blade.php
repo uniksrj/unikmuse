@@ -30,6 +30,7 @@
         <div class="card-body">
             <div class="mb-2 text-uppercase small text-muted">{{ $post->category ?: 'technology' }}</div>
             <h2 class="h4">{{ $post->title }}</h2>
+            <p class="text-muted mb-1"><strong>Source type:</strong> {{ $post->source_type ?: 'manual' }}</p>
             <p class="text-muted mb-1"><strong>Meta description:</strong> {{ $post->meta_description }}</p>
             <p class="text-muted mb-0"><strong>Reading time:</strong> {{ $readingTime }} min | <strong>Word count:</strong> {{ number_format($wordCount) }}</p>
         </div>

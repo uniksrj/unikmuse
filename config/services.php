@@ -36,8 +36,12 @@ return [
 
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
-        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
-        'publish_model' => env('OPENAI_PUBLISH_MODEL', env('OPENAI_MODEL', 'gpt-4o-mini')),
+        'draft_model' => env('OPENAI_MODEL_DRAFT', env('OPENAI_MODEL', 'gpt-4o-mini')),
+        'publish_model' => env(
+            'OPENAI_MODEL_PUBLISH',
+            env('OPENAI_PUBLISH_MODEL', env('OPENAI_MODEL_DRAFT', env('OPENAI_MODEL', 'gpt-4o-mini')))
+        ),
+        'model' => env('OPENAI_MODEL_DRAFT', env('OPENAI_MODEL', 'gpt-4o-mini')),
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
     ],
 

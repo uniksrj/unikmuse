@@ -13,7 +13,15 @@ class OpenAiBlogGeneratorService
      */
     public function allowedCategorySlugs(): array
     {
-        return config('blog_automation.allowed_category_slugs', []);
+        $allowed = $this->blogConfig('allowed_category_slugs', []);
+        if (!is_array($allowed) || empty($allowed)) {
+            return ['news-updates'];
+        }
+
+        return array_values(array_map(
+            static fn ($slug) => Str::lower(trim((string) $slug)),
+            $allowed
+        ));
     }
 
     /**
@@ -39,6 +47,8 @@ class OpenAiBlogGeneratorService
             'topic_title' => (string) ($topic['title'] ?? ''),
             'topic_description' => (string) ($topic['description'] ?? ''),
             'topic_hint' => (string) ($topic['topic_hint'] ?? 'technology'),
+            'source_type' => (string) ($topic['source_type'] ?? 'rss'),
+            'category_slug_hint' => (string) ($topic['category_slug'] ?? ''),
             'rules' => [
                 'Do not copy source text. Write original content.',
                 'Use practical headings and readable paragraphs.',
@@ -51,7 +61,7 @@ class OpenAiBlogGeneratorService
             $decoded = $this->requestJsonCompletion(
                 $systemPrompt,
                 json_encode($userPrompt, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-                (string) config('services.openai.model', 'gpt-4o-mini'),
+                (string) config('services.openai.draft_model', config('services.openai.model', 'gpt-4o-mini')),
                 0.7,
                 120
             );
@@ -150,7 +160,10 @@ class OpenAiBlogGeneratorService
         $decoded = $this->requestJsonCompletion(
             $systemPrompt,
             $userPrompt,
-            (string) config('services.openai.publish_model', config('services.openai.model', 'gpt-4o-mini')),
+            (string) config(
+                'services.openai.publish_model',
+                config('services.openai.draft_model', config('services.openai.model', 'gpt-4o-mini'))
+            ),
             0.65,
             180
         );
@@ -220,7 +233,12 @@ class OpenAiBlogGeneratorService
             }
         }
 
-        return (($topic['topic_hint'] ?? 'technology') === 'travel') ? 'travel' : 'technology';
+        $fallback = Str::lower(trim((string) $this->blogConfig('fallback_category_slug', 'news-updates')));
+        if (in_array($fallback, $allowed, true)) {
+            return $fallback;
+        }
+
+        return $allowed[0] ?? 'news-updates';
     }
 
     /**
@@ -305,5 +323,15 @@ class OpenAiBlogGeneratorService
             . '<p>Start with one actionable step, measure the result, and iterate weekly. This creates momentum and avoids overwhelm.</p>'
             . '<h3>What common mistake should readers avoid?</h3>'
             . '<p>Avoid copying tactics without context. Choose strategies that fit your goals, resources, and audience.</p>';
+    }
+
+    private function blogConfig(string $key, mixed $default = null): mixed
+    {
+        $blogValue = config("blog.{$key}");
+        if ($blogValue !== null) {
+            return $blogValue;
+        }
+
+        return config("blog_automation.{$key}", $default);
     }
 }

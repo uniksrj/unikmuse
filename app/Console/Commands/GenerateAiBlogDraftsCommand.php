@@ -12,14 +12,14 @@ class GenerateAiBlogDraftsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'blogs:generate-ai-drafts {--limit=5 : Number of topics to process in this run}';
+    protected $signature = 'blogs:generate-ai-drafts {--limit= : Number of topics to process in this run}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Fetch trending RSS topics and generate AI-powered blog drafts for admin review';
+    protected $description = 'Fetch multi-source topics and generate AI-powered blog drafts for admin review';
 
     public function __construct(private readonly AiBlogDraftGeneratorService $generatorService)
     {
@@ -31,7 +31,9 @@ class GenerateAiBlogDraftsCommand extends Command
      */
     public function handle(): int
     {
-        $limit = (int) $this->option('limit');
+        $defaultLimit = (int) (config('blog.default_limit') ?? config('blog_automation.default_limit', 5));
+        $optionLimit = $this->option('limit');
+        $limit = is_numeric($optionLimit) ? max(1, (int) $optionLimit) : max(1, $defaultLimit);
 
         $this->info("Starting AI draft generation (limit: {$limit})...");
 

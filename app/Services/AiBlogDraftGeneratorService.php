@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\newpost_details;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class AiBlogDraftGeneratorService
@@ -16,9 +17,9 @@ class AiBlogDraftGeneratorService
     /**
      * @return array<string, int>
      */
-    public function run(int $limit = 5): array
+    public function run(?int $limit = null): array
     {
-        $limit = max(1, $limit);
+        $limit = max(1, (int) ($limit ?? $this->blogConfig('default_limit', 5)));
 
         $topics = $this->rssTopicFetcher->fetchTrendingTopics($limit);
 
@@ -63,27 +64,43 @@ class AiBlogDraftGeneratorService
 
     private function isDuplicate(string $title, string $sourceUrl): bool
     {
-        $normalizedTitle = Str::lower(trim($title));
-        $normalizedSource = trim($sourceUrl);
+        $normalizedTitle = $this->normalizeTitle($title);
+        $titleSlug = Str::slug($normalizedTitle);
+        $exactLowerTitle = Str::lower(trim($title));
+        $normalizedSource = rtrim(Str::lower(trim($sourceUrl)), '/');
 
-        if ($normalizedTitle === '' && $normalizedSource === '') {
+        if ($exactLowerTitle === '' && $normalizedSource === '') {
             return false;
         }
 
         return newpost_details::query()
-            ->where(function ($query) use ($normalizedTitle, $normalizedSource) {
+            ->where(function ($query) use ($exactLowerTitle, $titleSlug, $normalizedSource) {
                 $hasCondition = false;
 
-                if ($normalizedTitle !== '') {
-                    $query->whereRaw('LOWER(title) = ?', [$normalizedTitle]);
+                if ($exactLowerTitle !== '') {
+                    $query->whereRaw('LOWER(title) = ?', [$exactLowerTitle]);
+                    $hasCondition = true;
+                }
+
+                if ($titleSlug !== '' && Schema::hasColumn('newpost_details', 'slug')) {
+                    if ($hasCondition) {
+                        $query->orWhereRaw('LOWER(slug) = ?', [Str::lower($titleSlug)]);
+                    } else {
+                        $query->whereRaw('LOWER(slug) = ?', [Str::lower($titleSlug)]);
+                    }
                     $hasCondition = true;
                 }
 
                 if ($normalizedSource !== '') {
+                    $sourceVariants = array_values(array_unique([
+                        $normalizedSource,
+                        rtrim($normalizedSource, '/') . '/',
+                    ]));
+
                     if ($hasCondition) {
-                        $query->orWhere('source_url', $normalizedSource);
+                        $query->orWhereIn('source_url', $sourceVariants);
                     } else {
-                        $query->where('source_url', $normalizedSource);
+                        $query->whereIn('source_url', $sourceVariants);
                     }
                 }
             })
@@ -108,7 +125,7 @@ class AiBlogDraftGeneratorService
         $toc = $this->extractTableOfContents($content);
         $wordCount = str_word_count(strip_tags($content));
 
-        return newpost_details::create([
+        $data = [
             'name' => 'AI Editorial Assistant',
             'title' => $title,
             'slug' => $this->generateUniqueSlug($title),
@@ -127,7 +144,13 @@ class AiBlogDraftGeneratorService
             'word_count' => $wordCount,
             'tags' => json_encode([$categorySlug, 'ai-generated']),
             'created_date' => now(),
-        ]);
+        ];
+
+        if (Schema::hasColumn('newpost_details', 'source_type')) {
+            $data['source_type'] = trim((string) ($topic['source_type'] ?? 'rss'));
+        }
+
+        return newpost_details::create($data);
     }
 
     private function generateUniqueSlug(string $title): string
@@ -189,5 +212,23 @@ class AiBlogDraftGeneratorService
         }
 
         return $toc;
+    }
+
+    private function normalizeTitle(string $title): string
+    {
+        return (string) Str::of($title)
+            ->lower()
+            ->replaceMatches('/[^a-z0-9\s]/', ' ')
+            ->squish();
+    }
+
+    private function blogConfig(string $key, mixed $default = null): mixed
+    {
+        $blogValue = config("blog.{$key}");
+        if ($blogValue !== null) {
+            return $blogValue;
+        }
+
+        return config("blog_automation.{$key}", $default);
     }
 }

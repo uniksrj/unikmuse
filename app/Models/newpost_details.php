@@ -27,6 +27,7 @@ class newpost_details extends Model
         'comments_count',
         'category',
         'source_url',
+        'source_type',
         'file_path',
         'active',
         'tags',

@@ -48,6 +48,9 @@
                                     </td>
                                     <td><span class="badge bg-secondary text-uppercase">{{ $draft->category ?: 'technology' }}</span></td>
                                     <td>
+                                        <div class="mb-1">
+                                            <span class="badge bg-info text-dark text-uppercase">{{ $draft->source_type ?: 'manual' }}</span>
+                                        </div>
                                         @if (!empty($draft->source_url))
                                             <a href="{{ $draft->source_url }}" target="_blank" rel="noopener" class="small">View source</a>
                                         @else
