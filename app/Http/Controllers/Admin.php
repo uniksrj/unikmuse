@@ -7,6 +7,7 @@ use App\Services\ImageProcessingService;
 use App\Services\OpenAiBlogGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -249,9 +250,13 @@ class Admin extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
+            Log::error('Admin save_post exception', [
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Unexpected error: ' . $e->getMessage(),
+                'message' => 'An unexpected server error occurred. Please try again.',
             ], 500);
         }
     }
@@ -359,9 +364,14 @@ class Admin extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
+            Log::error('Admin update_data exception', [
+                'post_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Unexpected error: ' . $e->getMessage(),
+                'message' => 'An unexpected server error occurred. Please try again.',
             ], 500);
         }
     }

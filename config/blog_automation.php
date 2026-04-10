@@ -7,6 +7,8 @@ return [
     'long_description_length' => (int) env('AI_BLOG_LONG_DESCRIPTION_LENGTH', 220),
     'fallback_category_slug' => (string) env('AI_BLOG_FALLBACK_CATEGORY', 'news-updates'),
     'schedule_time' => (string) env('AI_BLOG_SCHEDULE_TIME', '06:00'),
+    'log_channel' => (string) env('AI_BLOG_LOG_CHANNEL', 'ai_blog'),
+    'log_response_body_limit' => (int) env('AI_BLOG_LOG_RESPONSE_BODY_LIMIT', 1200),
 
     'allowed_keywords' => array_values(array_filter(array_map(
         static fn (string $keyword): string => strtolower(trim($keyword)),

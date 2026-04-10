@@ -30,9 +30,14 @@ class OpenAiBlogGeneratorService
      */
     public function generate(array $topic): ?array
     {
+        $requestId = (string) Str::uuid();
+        $logger = $this->aiLogger();
         $apiKey = trim((string) config('services.openai.api_key'));
         if ($apiKey === '') {
-            Log::warning('OpenAI API key missing. Skipping AI generation.');
+            $logger->warning('OpenAI API key missing. Skipping AI generation.', [
+                'request_id' => $requestId,
+                'stage' => 'draft_generation',
+            ]);
             return null;
         }
 
@@ -58,15 +63,35 @@ class OpenAiBlogGeneratorService
         ];
 
         try {
+            $model = (string) config('services.openai.draft_model', config('services.openai.model', 'gpt-4o-mini'));
+            $logger->info('Starting AI draft generation request.', [
+                'request_id' => $requestId,
+                'stage' => 'draft_generation',
+                'model' => $model,
+                'topic_title' => (string) ($topic['title'] ?? ''),
+                'source_type' => (string) ($topic['source_type'] ?? 'rss'),
+                'source_url' => (string) ($topic['source_url'] ?? ''),
+            ]);
+
             $decoded = $this->requestJsonCompletion(
                 $systemPrompt,
                 json_encode($userPrompt, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-                (string) config('services.openai.draft_model', config('services.openai.model', 'gpt-4o-mini')),
+                $model,
                 0.7,
-                120
+                120,
+                [
+                    'request_id' => $requestId,
+                    'stage' => 'draft_generation',
+                    'topic_title' => (string) ($topic['title'] ?? ''),
+                ]
             );
 
             if ($decoded === null) {
+                $logger->warning('OpenAI draft generation returned null payload.', [
+                    'request_id' => $requestId,
+                    'stage' => 'draft_generation',
+                    'topic_title' => (string) ($topic['title'] ?? ''),
+                ]);
                 return null;
             }
 
@@ -84,13 +109,31 @@ class OpenAiBlogGeneratorService
             ];
 
             if ($generated['title'] === '' || $generated['content'] === '' || $generated['meta_description'] === '') {
-                Log::warning('OpenAI payload missing required keys', ['payload' => $decoded]);
+                $logger->warning('OpenAI payload missing required keys for draft generation.', [
+                    'request_id' => $requestId,
+                    'stage' => 'draft_generation',
+                    'topic_title' => (string) ($topic['title'] ?? ''),
+                    'payload_keys' => array_keys($decoded),
+                ]);
                 return null;
             }
 
+            $logger->info('AI draft generation completed successfully.', [
+                'request_id' => $requestId,
+                'stage' => 'draft_generation',
+                'generated_title' => $generated['title'],
+                'category_slug' => $generated['category_slug'],
+            ]);
+
             return $generated;
         } catch (\Throwable $exception) {
-            Log::warning('OpenAI generation exception', ['error' => $exception->getMessage()]);
+            $logger->error('OpenAI draft generation exception.', [
+                'request_id' => $requestId,
+                'stage' => 'draft_generation',
+                'error' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]);
             return null;
         }
     }
@@ -102,9 +145,15 @@ class OpenAiBlogGeneratorService
      */
     public function optimizeForPublishing(string $title, string $draftContent, string $category): ?array
     {
+        $requestId = (string) Str::uuid();
+        $logger = $this->aiLogger();
         $apiKey = trim((string) config('services.openai.api_key'));
         if ($apiKey === '') {
-            Log::warning('OpenAI API key missing. Skipping final publish optimization.');
+            $logger->warning('OpenAI API key missing. Skipping final publish optimization.', [
+                'request_id' => $requestId,
+                'stage' => 'publish_optimization',
+                'title' => $title,
+            ]);
             return null;
         }
 
@@ -157,18 +206,38 @@ class OpenAiBlogGeneratorService
             . "Return ONLY valid JSON with keys: title, content, meta_description.\n"
             . "Do NOT output markdown.";
 
+        $model = (string) config(
+            'services.openai.publish_model',
+            config('services.openai.draft_model', config('services.openai.model', 'gpt-4o-mini'))
+        );
+
+        $logger->info('Starting AI publish optimization request.', [
+            'request_id' => $requestId,
+            'stage' => 'publish_optimization',
+            'model' => $model,
+            'title' => $title,
+            'category' => $category,
+        ]);
+
         $decoded = $this->requestJsonCompletion(
             $systemPrompt,
             $userPrompt,
-            (string) config(
-                'services.openai.publish_model',
-                config('services.openai.draft_model', config('services.openai.model', 'gpt-4o-mini'))
-            ),
+            $model,
             0.65,
-            180
+            180,
+            [
+                'request_id' => $requestId,
+                'stage' => 'publish_optimization',
+                'title' => $title,
+            ]
         );
 
         if ($decoded === null) {
+            $logger->warning('OpenAI publish optimization returned null payload.', [
+                'request_id' => $requestId,
+                'stage' => 'publish_optimization',
+                'title' => $title,
+            ]);
             return null;
         }
 
@@ -179,7 +248,11 @@ class OpenAiBlogGeneratorService
         ];
 
         if ($optimized['content'] === '') {
-            Log::warning('Final publish optimization returned empty content.');
+            $logger->warning('Final publish optimization returned empty content.', [
+                'request_id' => $requestId,
+                'stage' => 'publish_optimization',
+                'title' => $title,
+            ]);
             return null;
         }
 
@@ -196,6 +269,12 @@ class OpenAiBlogGeneratorService
         if (Str::length($optimized['meta_description']) > 160) {
             $optimized['meta_description'] = trim(Str::limit($optimized['meta_description'], 160, ''));
         }
+
+        $logger->info('AI publish optimization completed successfully.', [
+            'request_id' => $requestId,
+            'stage' => 'publish_optimization',
+            'optimized_title' => $optimized['title'],
+        ]);
 
         return $optimized;
     }
@@ -262,9 +341,19 @@ class OpenAiBlogGeneratorService
         string $userPrompt,
         string $model,
         float $temperature,
-        int $timeoutSeconds
+        int $timeoutSeconds,
+        array $context = []
     ): ?array {
+        $logger = $this->aiLogger();
+        $logContext = array_merge([
+            'model' => $model,
+            'temperature' => $temperature,
+            'timeout_seconds' => $timeoutSeconds,
+        ], $context);
+
         try {
+            $logger->info('Sending OpenAI API request.', $logContext);
+
             $response = Http::timeout($timeoutSeconds)
                 ->withToken((string) config('services.openai.api_key'))
                 ->acceptJson()
@@ -279,10 +368,13 @@ class OpenAiBlogGeneratorService
                 ]);
 
             if (!$response->successful()) {
-                Log::warning('OpenAI request failed', [
+                $logger->warning('OpenAI request failed.', array_merge($logContext, [
                     'status' => $response->status(),
-                    'body' => Str::limit($response->body(), 700),
-                ]);
+                    'body' => Str::limit(
+                        $response->body(),
+                        (int) $this->blogConfig('log_response_body_limit', 1200)
+                    ),
+                ]));
                 return null;
             }
 
@@ -290,19 +382,35 @@ class OpenAiBlogGeneratorService
             $content = data_get($payload, 'choices.0.message.content');
 
             if (!is_string($content) || trim($content) === '') {
-                Log::warning('OpenAI returned empty content', ['response' => $payload]);
+                $logger->warning('OpenAI returned empty content.', array_merge($logContext, [
+                    'response' => $payload,
+                ]));
                 return null;
             }
 
             $decoded = $this->decodeJson($content);
             if ($decoded === null) {
-                Log::warning('OpenAI returned invalid JSON payload', ['content' => Str::limit($content, 700)]);
+                $logger->warning('OpenAI returned invalid JSON payload.', array_merge($logContext, [
+                    'content' => Str::limit(
+                        $content,
+                        (int) $this->blogConfig('log_response_body_limit', 1200)
+                    ),
+                ]));
                 return null;
             }
 
+            $logger->info('OpenAI API request succeeded.', array_merge($logContext, [
+                'finish_reason' => data_get($payload, 'choices.0.finish_reason'),
+                'usage' => data_get($payload, 'usage'),
+            ]));
+
             return $decoded;
         } catch (\Throwable $exception) {
-            Log::warning('OpenAI request exception', ['error' => $exception->getMessage()]);
+            $logger->error('OpenAI request exception.', array_merge($logContext, [
+                'error' => $exception->getMessage(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]));
             return null;
         }
     }
@@ -323,6 +431,11 @@ class OpenAiBlogGeneratorService
             . '<p>Start with one actionable step, measure the result, and iterate weekly. This creates momentum and avoids overwhelm.</p>'
             . '<h3>What common mistake should readers avoid?</h3>'
             . '<p>Avoid copying tactics without context. Choose strategies that fit your goals, resources, and audience.</p>';
+    }
+
+    private function aiLogger()
+    {
+        return Log::channel((string) $this->blogConfig('log_channel', 'ai_blog'));
     }
 
     private function blogConfig(string $key, mixed $default = null): mixed

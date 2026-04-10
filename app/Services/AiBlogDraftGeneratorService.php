@@ -40,6 +40,12 @@ class AiBlogDraftGeneratorService
                 $generated = $this->openAiGenerator->generate($topic);
                 if ($generated === null) {
                     $result['failed']++;
+                    Log::channel((string) $this->blogConfig('log_channel', 'ai_blog'))
+                        ->warning('Draft generation returned null AI output.', [
+                            'topic_title' => (string) ($topic['title'] ?? ''),
+                            'source_type' => (string) ($topic['source_type'] ?? 'rss'),
+                            'source_url' => (string) ($topic['source_url'] ?? ''),
+                        ]);
                     continue;
                 }
 
