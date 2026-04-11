@@ -1,5 +1,28 @@
 import $ from 'jquery';
-import 'select2';
+window.$ = window.jQuery = $;
+
+async function ensureSelect2Loaded() {
+    if (typeof $.fn.select2 === 'function') {
+        return true;
+    }
+
+    try {
+        const module = await import('select2');
+
+        if (typeof module.default === 'function') {
+            module.default(window, $);
+        }
+
+        if (typeof $.fn.select2 === 'function') {
+            return true;
+        }
+    } catch (error) {
+        console.error('Failed to load Select2 module:', error);
+    }
+
+    return typeof $.fn.select2 === 'function';
+}
+
 function showAlert(type, message) {
     $('.alert-dismissible').remove();
     var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
@@ -79,69 +102,118 @@ function updateCounters() {
     $('#metaDescCount').text(metaDescCount);
 }
 
-function initializeSelect2() {
+async function initializeSelect2() {
+    const loaded = await ensureSelect2Loaded();
+    if (!loaded) {
+        console.warn('Select2 is not available on $.fn. Skipping Select2 initialization.');
+        return;
+    }
+
+    function initSelect2Element($element, options) {
+        if (!$element.length) {
+            return;
+        }
+
+        if ($element.hasClass('select2-hidden-accessible')) {
+            $element.select2('destroy');
+        }
+
+        var dropdownParent = $element.closest('.form-container');
+        if (!dropdownParent.length) {
+            dropdownParent = $('body');
+        }
+
+        $element.select2($.extend({
+            width: '100%',
+            dropdownParent: dropdownParent
+        }, options));
+    }
+
     if ($('#tagsSelect').length) {
         console.log('Initializing tags Select2...');
 
-        $('#tagsSelect').select2({
+        initSelect2Element($('#tagsSelect'), {
             placeholder: "Select or add tags",
             allowClear: true,
             tags: true,
-            tokenSeparators: [',', ' '],
-            dropdownParent: $('body')
+            tokenSeparators: [',', ' ']
         });
     }
 
     if ($('#categorySelect').length) {
         console.log('Initializing category Select2...');
 
-        $('#categorySelect').select2({
+        initSelect2Element($('#categorySelect'), {
             placeholder: "Select a category",
-            allowClear: true,
-            dropdownParent: $('body')
+            allowClear: true
         });
     }
 }
 
 function extractHeadings(content) {
+    if (!content || !content.trim()) {
+        return [];
+    }
+
+    var normalizedContent = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    var candidates = [];
+
+    function lineFromIndex(text, index) {
+        return text.slice(0, index).split('\n').length - 1;
+    }
+
+    var htmlRegex = /<h([2-4])[^>]*>([\s\S]*?)<\/h\1>/gi;
+    var htmlMatch;
+    while ((htmlMatch = htmlRegex.exec(normalizedContent)) !== null) {
+        var htmlTitle = $('<div>').html(htmlMatch[2]).text().replace(/\s+/g, ' ').trim();
+        if (!htmlTitle) {
+            continue;
+        }
+
+        candidates.push({
+            index: htmlMatch.index,
+            title: htmlTitle,
+            level: parseInt(htmlMatch[1], 10),
+            line: lineFromIndex(normalizedContent, htmlMatch.index)
+        });
+    }
+
+    var markdownRegex = /^(#{2,4})\s*(.+?)\s*$/gm;
+    var markdownMatch;
+    while ((markdownMatch = markdownRegex.exec(normalizedContent)) !== null) {
+        var markdownTitle = markdownMatch[2].replace(/\s+/g, ' ').trim();
+        if (!markdownTitle || markdownTitle.startsWith('#')) {
+            continue;
+        }
+
+        candidates.push({
+            index: markdownMatch.index,
+            title: markdownTitle,
+            level: markdownMatch[1].length,
+            line: lineFromIndex(normalizedContent, markdownMatch.index)
+        });
+    }
+
+    candidates.sort(function (a, b) {
+        return a.index - b.index;
+    });
+
     var headings = [];
-    var lines = content.split('\n');
+    var seen = {};
 
-    $.each(lines, function (lineIndex, line) {
-        line = $.trim(line);
-
-        if (line.startsWith('## ')) {
-            headings.push({
-                id: 'section-' + (headings.length + 1),
-                title: line.replace('## ', '').trim(),
-                level: 2,
-                line: lineIndex
-            });
-        } else if (line.startsWith('### ')) {
-            headings.push({
-                id: 'section-' + (headings.length + 1),
-                title: line.replace('### ', '').trim(),
-                level: 3,
-                line: lineIndex
-            });
-        } else if (line.startsWith('#### ')) {
-            headings.push({
-                id: 'section-' + (headings.length + 1),
-                title: line.replace('#### ', '').trim(),
-                level: 4,
-                line: lineIndex
-            });
+    $.each(candidates, function (_, item) {
+        var key = item.level + '::' + item.title.toLowerCase();
+        if (seen[key]) {
+            return;
         }
 
-        var htmlMatch = line.match(/<h([2-4])[^>]*>(.*?)<\/h\1>/i);
-        if (htmlMatch) {
-            headings.push({
-                id: 'section-' + (headings.length + 1),
-                title: $(htmlMatch[2]).text().trim(),
-                level: parseInt(htmlMatch[1]),
-                line: lineIndex
-            });
-        }
+        seen[key] = true;
+        headings.push({
+            id: 'section-' + (headings.length + 1),
+            title: item.title,
+            level: item.level,
+            line: item.line
+        });
     });
 
     return headings;
@@ -172,7 +244,7 @@ function generateTOC() {
     var headings = extractHeadings(content);
 
     if (headings.length === 0) {
-        alert('No headings found! Use ## for main headings, ### for subheadings in your content.');
+        alert('No headings found! Use markdown headings (##, ###, ####) or HTML headings (<h2>, <h3>, <h4>).');
         return;
     }
 
@@ -325,8 +397,8 @@ function checkForMissingTOC() {
     }
 }
 
-$(document).ready(function () {
-    initializeSelect2();
+$(document).ready(async function () {
+    await initializeSelect2();
     loadExistingTOC();
     checkForMissingTOC();
     console.log("Admin JS is ready!");
@@ -550,17 +622,6 @@ $(document).ready(function () {
         previewWindow.document.close();
     });
 
-    $('#tagsSelect').select2({
-        placeholder: "Select tags...",
-        allowClear: true,
-        tags: true,
-        tokenSeparators: [',', ' ']
-    });
-
-    $('#categorySelect').select2({
-        placeholder: "Select category..."
-    });
-
     $('#postTitle, #postSlug, #description, input[name="meta_title"], textarea[name="meta_description"]').on('input', updateCounters);
 
     updateCounters();
@@ -633,6 +694,12 @@ $(document).ready(function () {
         e.preventDefault();
         var form = $(this);
         var formData = new FormData(this);
+        var uploadInput = document.getElementById('upload');
+
+        // Ensure selected file is always present in multipart payload.
+        if (uploadInput && uploadInput.files && uploadInput.files.length > 0) {
+            formData.set('file', uploadInput.files[0]);
+        }
 
         var submitBtn = form.find('button[type="submit"]');
         var originalText = submitBtn.html();

@@ -159,7 +159,7 @@ class OpenAiBlogGeneratorService
 
         $systemPrompt = 'You are an expert SEO content writer and blog strategist.';
 
-        $userPrompt = "This is the FINAL publishing step. Transform the given draft into a high-quality, SEO-optimized article suitable for ranking on Google.\n\n"
+        $userPrompt = "This is the FINAL publishing step. Transform the draft into a high-quality, human-like, SEO-optimized article that can rank on Google and provide real value.\n\n"
             . "========================================\n"
             . "INPUT\n"
             . "========================================\n"

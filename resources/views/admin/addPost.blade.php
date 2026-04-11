@@ -131,7 +131,7 @@
                                 <button type="button" class="btn btn-outline-secondary btn-sm mb-2" id="resetTOCBtn">
                                     <i class="fas fa-redo me-1"></i> Reset
                                 </button>
-                                <p class="small text-muted mb-0">Will auto-generate from ##, ### headings in your
+                                <p class="small text-muted mb-0">Will auto-generate from markdown (##, ###, ####) or HTML headings (&lt;h2&gt;-&lt;h4&gt;) in your
                                     content</p>
                             </div>
 
@@ -285,7 +285,7 @@
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Category</label>
-                                        <select class="form-control" name="category" id="categorySelect">
+                                        <select class="form-control select2" name="category" id="categorySelect">
                                             <option value="">Select Category</option>
                                             @foreach ($categories as $key => $value)
                                                 <option value="{{ $key }}">{{ $value }}</option>
@@ -296,7 +296,7 @@
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Tags</label>
-                                        <select class="form-control" name="tags[]" id="tagsSelect"
+                                        <select class="form-control select2" name="tags[]" id="tagsSelect"
                                             multiple="multiple">
                                             @foreach ($commonTags as $tag)
                                                 <option value="{{ $tag }}">{{ $tag }}</option>

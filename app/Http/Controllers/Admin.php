@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Admin extends Controller
@@ -264,6 +265,10 @@ class Admin extends Controller
     public function view_editPage($id)
     {
         $post = DB::table('newpost_details')->where('id', $id)->firstOrFail();
+        // echo "<pre>";
+        // print_r($post);
+        // echo "</pre>";
+        // return;
         return view('admin.editpage', compact('post'));
     }
 
@@ -283,6 +288,9 @@ class Admin extends Controller
                 'meta_title' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:500',
                 'slug' => 'nullable|string|max:255',
+                'table_of_contents' => 'nullable|json',
+                'reading_time' => 'nullable|integer|min:1',
+                'word_count' => 'nullable|integer|min:0',
             ]);
 
             $isSlugExists = !empty($validated['slug'])
@@ -301,6 +309,13 @@ class Admin extends Controller
                 ->where('id', $id)
                 ->first();
 
+            $wordCount = isset($validated['word_count'])
+                ? (int) $validated['word_count']
+                : str_word_count(strip_tags($validated['desc']));
+            $readingTime = isset($validated['reading_time'])
+                ? (int) $validated['reading_time']
+                : (int) ceil($wordCount / 200);
+
             $data = [
                 'title' => $validated['title'],
                 'description' => $validated['desc'],
@@ -311,6 +326,9 @@ class Admin extends Controller
                 'meta_title' => $validated['meta_title'] ?? null,
                 'tags' => !empty($validated['tags']) ? json_encode($validated['tags']) : null,
                 'meta_description' => $validated['meta_description'] ?? null,
+                'table_of_contents' => $validated['table_of_contents'] ?? null,
+                'reading_time' => (string) $readingTime,
+                'word_count' => $wordCount,
                 'is_featured' => $validated['featured'] ?? 0,
                 'updated_at' => now(),
             ];
@@ -335,14 +353,24 @@ class Admin extends Controller
                     'sizes' => ['thumb', 'medium', 'large', 'original'],
                 ]);
 
-                $storagePaths = [];
-                foreach ($processed as $size => $formats) {
-                    foreach ($formats as $format => $path) {
-                        $storagePaths[$size][$format] = $this->imgService->saveToStorage($path, 'uploads');
+                if (empty($processed)) {
+                    // Fallback: keep update reliable even if image processing pipeline returns empty.
+                    $storedPath = Storage::disk('public')->putFile('uploads', $file);
+                    $data['file_path'] = json_encode([
+                        'original' => [
+                            'jpeg' => $storedPath,
+                        ],
+                    ]);
+                } else {
+                    $storagePaths = [];
+                    foreach ($processed as $size => $formats) {
+                        foreach ($formats as $format => $path) {
+                            $storagePaths[$size][$format] = $this->imgService->saveToStorage($path, 'uploads');
+                        }
                     }
-                }
 
-                $data['file_path'] = json_encode($storagePaths);
+                    $data['file_path'] = json_encode($storagePaths);
+                }
             } else {
                 $data['file_path'] = $post->file_path ?? null;
             }

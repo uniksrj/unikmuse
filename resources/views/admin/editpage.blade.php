@@ -397,24 +397,30 @@
                                 <button type="button" class="btn btn-outline-info btn-sm mb-2" id="viewTOCBtn">
                                     <i class="fas fa-eye me-1"></i> View Current TOC
                                 </button>
-                                <p class="small text-muted mb-0">Auto-generates from ##, ### headings in your content
+                                <p class="small text-muted mb-0">Auto-generates from markdown (##, ###, ####) or HTML headings (&lt;h2&gt;-&lt;h4&gt;) in your content
                                 </p>
                             </div>
 
                             <!-- Hidden fields to store TOC data -->
                             @php
-                                $tocData = !empty($post->table_of_contents)
-                                    ? json_decode($post->table_of_contents, true)
-                                    : [];
-                                $readingTime =
-                                    $post->reading_time ?? ceil(str_word_count(strip_tags($post->description)) / 200);
+                                $tocData = [];
+
+                                if (is_string($post->table_of_contents) && trim($post->table_of_contents) !== '') {
+                                    // Decode as objects so existing Blade access ($item->title, $item->level) keeps working.
+                                    $decoded = json_decode($post->table_of_contents);
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && !empty($decoded)) {
+                                        $tocData = $decoded;
+                                    }
+                                }
+
+                                $readingTime = $post->reading_time ?? ceil(str_word_count(strip_tags($post->description)) / 200);
                                 $wordCount = $post->word_count ?? str_word_count(strip_tags($post->description));
                             @endphp
                             <input type="hidden" name="table_of_contents" id="tableOfContents"
                                 value="{{ !empty($tocData) ? json_encode($tocData) : '' }}">
                             <input type="hidden" name="reading_time" id="readingTime" value="{{ $readingTime }}">
                             <input type="hidden" name="word_count" id="wordCount" value="{{ $wordCount }}">
-
+                            
                             <!-- TOC Preview -->
                             <div class="card mb-3" id="tocPreviewCard"
                                 style="{{ !empty($tocData) ? '' : 'display: none;' }}">
@@ -435,12 +441,12 @@
                                         <ul id="tocPreviewList" class="list-unstyled mb-0">
                                             @foreach ($tocData as $index => $item)
                                                 <li class="mb-2"
-                                                    style="padding-left: {{ ($item['level'] - 2) * 20 }}px">
+                                                    style="padding-left: {{ ($item->level - 2) * 20 }}px">
                                                     <div class="d-flex align-items-center">
                                                         <span class="badge bg-primary me-2" style="min-width: 24px;">
                                                             {{ $index + 1 }}
                                                         </span>
-                                                        <span class="small">{{ $item['title'] }}</span>
+                                                        <span class="small">{{ $item->title }}</span>
                                                     </div>
                                                 </li>
                                             @endforeach
@@ -460,7 +466,7 @@
                                     <div class="border rounded p-2 text-center">
                                         <div class="small text-muted">Sections</div>
                                         <div class="h5 mb-0" id="statSections">
-                                            {{ !empty($tocData) ? count($tocData) : '0' }}
+                                            {{-- {{ !empty($tocData) ? count($tocData) : '0' }} --}}
                                         </div>
                                     </div>
                                 </div>
@@ -520,21 +526,27 @@
                                     @if (!empty($imagepaths))
                                         @if (is_array($imagepaths))
                                             @foreach ($imagepaths as $index => $imagepath)
+                                                @php
+                                                    $previewPath = $imagepath->thumb->webp ?? $imagepath->thumb->jpeg ?? $imagepath->medium->webp ?? $imagepath->medium->jpeg ?? $imagepath->large->webp ?? $imagepath->large->jpeg ?? $imagepath->original->webp ?? $imagepath->original->jpeg ?? null;
+                                                @endphp
                                                 <div class="image-item">
-                                                    <img src="{{ asset('storage/' . $imagepath->thumb->webp) }}"
+                                                    <img src="{{ $previewPath ? asset('storage/' . $previewPath) : asset('images/default-thumbnail.jpg') }}"
                                                         alt="Current Image {{ $index + 1 }}">
                                                     <button type="button" class="image-remove"
-                                                        onclick="removeImage(this, '{{ $imagepath->thumb->webp }}')">
+                                                        onclick="removeImage(this, '{{ $previewPath ?? '' }}')">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
                                             @endforeach
                                         @else
+                                            @php
+                                                $previewPath = $imagepaths->thumb->webp ?? $imagepaths->thumb->jpeg ?? $imagepaths->medium->webp ?? $imagepaths->medium->jpeg ?? $imagepaths->large->webp ?? $imagepaths->large->jpeg ?? $imagepaths->original->webp ?? $imagepaths->original->jpeg ?? null;
+                                            @endphp
                                             <div class="image-item">
-                                                <img src="{{ asset('storage/' . $imagepaths->thumb->webp) }}"
+                                                <img src="{{ $previewPath ? asset('storage/' . $previewPath) : asset('images/default-thumbnail.jpg') }}"
                                                     alt="Current Image">
                                                 <button type="button" class="image-remove"
-                                                    onclick="removeImage(this, '{{ $imagepaths->thumb->webp }}')">
+                                                    onclick="removeImage(this, '{{ $previewPath ?? '' }}')">
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </div>
@@ -635,7 +647,7 @@
                                 <div class="admin-form-col">
                                     <div class="mb-3">
                                         <label class="form-label">Category</label>
-                                        <select class="form-control" name="category" id="categorySelect">
+                                        <select class="form-control select2" name="category" id="categorySelect">
                                             <option value="">Select Category</option>
                                             @foreach ($categories as $key => $value)
                                                 <option value="{{ $key }}"
@@ -653,7 +665,7 @@
                                             $allTags = array_unique(array_merge($commonTags, $postTags));
                                         @endphp
 
-                                        <select class="form-control" name="tags[]" id="tagsSelect"
+                                        <select class="form-control select2" name="tags[]" id="tagsSelect"
                                             multiple="multiple">
                                             @foreach ($allTags as $tag)
                                                 @php

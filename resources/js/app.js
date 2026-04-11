@@ -10,8 +10,25 @@ $(document).ready(function() {
         import('select2').then((module) => {
             if (typeof module.default === 'function') {
                 module.default(window, $);
-                $('.select2').select2();
             }
+
+            if (typeof $.fn.select2 !== 'function') {
+                console.warn('Select2 plugin not available after import.');
+                return;
+            }
+
+            $('.select2').each(function () {
+                const $el = $(this);
+                if ($el.hasClass('select2-hidden-accessible')) {
+                    return;
+                }
+
+                $el.select2({
+                    width: '100%'
+                });
+            });
+        }).catch((error) => {
+            console.error('Failed to import Select2:', error);
         });
     }
 

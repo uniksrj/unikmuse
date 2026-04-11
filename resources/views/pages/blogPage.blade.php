@@ -73,12 +73,16 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 @foreach ($featuredPosts as $post)
+                        @php
+                            $path = $post['thumbnail']['original']['webp'] ?? null;
+                            $alt = $post['title'] ?? 'Blog Post Thumbnail';
+                        @endphp
                     <article
                         class="bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1"
                         itemscope itemtype="https://schema.org/BlogPosting">
                         <div class="overflow-hidden rounded-t-unik-lg">
-                            <img src="{{ asset('storage/' . $post['thumbnail']['original']['webp']) }}"
-                                alt="{{ $post['title'] }}"
+                            <img src="{{ asset('storage/' . $path) }}"
+                                alt="{{ $alt }}"
                                 class="w-full h-48 md:h-56 object-cover hover:scale-105 transition-transform duration-300"
                                 itemprop="image">
                         </div>
@@ -163,8 +167,12 @@
                                 class="bg-white rounded-unik-lg shadow-unik-md border border-unik-border hover:shadow-unik-lg transition-all duration-300 hover:-translate-y-1"
                                 itemscope itemtype="https://schema.org/BlogPosting">
                                 <div class="overflow-hidden rounded-t-unik-lg">
-                                    <img src="{{ asset('storage/' . $post['thumbnail']['original']['webp']) }}"
-                                        alt="{{ $post['title'] }}"
+                                    @php
+                                        $path = $post['thumbnail']['original']['webp'] ?? null;
+                                        $alt = $post['title'] ?? 'Blog Post Thumbnail';
+                                    @endphp
+                                    <img src="{{ asset('storage/' . $path) }}"
+                                        alt="{{ $alt }}"
                                         class="w-full h-48 md:h-56 object-cover hover:scale-105 transition-transform duration-300"
                                         itemprop="image">
                                 </div>
@@ -341,10 +349,14 @@
                         @foreach ($popularPosts as $popular)
                             <a href="{{ route('post.show', $popular['id']) }}" class="block">
                                 <div
+                                @php
+                                    $path = $popular['thumbnail']['original']['webp'] ?? null;
+                                    $alt = $popular['title'] ?? 'Blog Post Thumbnail';
+                                @endphp
                                     class="flex items-start gap-3 p-2 rounded-unik-md hover:bg-unik-primary/5 transition-colors group">
 
-                                    <img src="{{ asset('storage/' . $popular['thumbnail']['original']['webp']) }}"
-                                        alt="{{ $popular['title'] }}"
+                                    <img src="{{ asset('storage/' . $path) }}"
+                                        alt="{{ $alt }}"
                                         class="w-16 h-16 object-cover rounded-unik-md flex-shrink-0">
 
                                     <div class="flex-1 min-w-0">
