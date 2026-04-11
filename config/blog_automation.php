@@ -36,25 +36,73 @@ return [
     'scoring_high_engagement_points' => (int) env('AI_BLOG_SCORE_HIGH_ENGAGEMENT', 1),
 
     'category_keywords' => [
-        'technology' => ['ai', 'software', 'app', 'coding', 'automation'],
-        'travel' => ['travel', 'trip', 'places', 'destination', 'guide'],
-        'life-style' => ['lifestyle', 'health', 'habits', 'routine'],
-        'digital-trends' => ['viral', 'social media', 'internet trends'],
-        'productivity' => ['focus', 'work', 'efficiency', 'time management'],
-        'news-updates' => ['news', 'update', 'latest'],
-        'stories-experiences' => ['story', 'journey', 'experience'],
-        'creativity-inspiration' => ['creativity', 'ideas', 'motivation'],
+        'technology' => [
+            'artificial intelligence tools',
+            'latest software trends',
+            'app development guide',
+            'coding best practices',
+            'automation tools for business'
+        ],
+        'travel' => [
+            'travel guide',
+            'best places to visit',
+            'budget travel tips',
+            'international travel rules',
+            'destination recommendations'
+        ],
+        'life-style' => [
+            'healthy lifestyle habits',
+            'daily routine tips',
+            'self improvement ideas',
+            'work life balance',
+            'wellness and health tips'
+        ],
+        'digital-trends' => [
+            'latest internet trends',
+            'viral social media content',
+            'digital marketing trends',
+            'online trends analysis',
+            'social media growth tips'
+        ],
+        'productivity' => [
+            'time management techniques',
+            'how to stay focused',
+            'increase work efficiency',
+            'productivity tools',
+            'daily productivity hacks'
+        ],
+        'news-updates' => [
+            'latest news updates',
+            'breaking news today',
+            'current events analysis',
+            'global news trends',
+            'industry news insights'
+        ],
+        'stories-experiences' => [
+            'real life story',
+            'personal journey experience',
+            'life lessons learned',
+            'inspiring real stories',
+            'travel experiences story'
+        ],
+        'creativity-inspiration' => [
+            'creative ideas inspiration',
+            'how to stay creative',
+            'motivation for success',
+            'inspiration for work',
+            'creative thinking techniques'
+        ],
     ],
 
     'category_tones' => [
-        'technology' => 'expert, analytical',
-        'travel' => 'descriptive, engaging',
-        'life-style' => 'conversational, relatable',
-        'digital-trends' => 'expert, analytical',
-        'productivity' => 'actionable, structured',
-        'news-updates' => 'neutral, factual',
-        'stories-experiences' => 'storytelling, emotional',
-        'creativity-inspiration' => 'motivational',
+    'technology' => 'expert, analytical, forward-thinking',
+    'travel' => 'descriptive, immersive, engaging',
+    'life-style' => 'conversational, relatable, practical',
+    'digital-trends' => 'insightful, analytical, trend-focused',
+    'productivity' => 'actionable, structured, result-oriented',
+    'news-updates' => 'neutral, factual, concise',
+    'stories-experiences' => 'storytelling, emotional, personal',
+    'creativity-inspiration' => 'motivational, uplifting, thought-provoking',
     ],
 
     'category_source_map' => [

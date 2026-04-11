@@ -20,7 +20,7 @@ class OpenAiBlogGeneratorService
         }
 
         return array_values(array_map(
-            static fn ($slug) => Str::lower(trim((string) $slug)),
+            static fn($slug) => Str::lower(trim((string) $slug)),
             $allowed
         ));
     }
@@ -81,7 +81,7 @@ class OpenAiBlogGeneratorService
                 'Use title optimization with power words like Best, Ultimate, Complete, Top, Latest',
             ],
             'related_internal_links' => array_map(
-                static fn (array $row): array => [
+                static fn(array $row): array => [
                     'url' => '/blog/' . $row['slug'],
                     'title' => $row['title'],
                 ],
@@ -180,6 +180,7 @@ class OpenAiBlogGeneratorService
         }
     }
 
+
     /**
      * Final publishing step: rewrite draft into high-quality SEO article.
      *
@@ -250,7 +251,7 @@ class OpenAiBlogGeneratorService
             . "Integrate up to 3 relevant internal links naturally in different sections.\n"
             . "Use meaningful anchor text and avoid raw URLs.\n"
             . "Related links JSON: " . json_encode(array_map(
-                static fn (array $row): array => ['url' => '/blog/' . $row['slug'], 'title' => $row['title']],
+                static fn(array $row): array => ['url' => '/blog/' . $row['slug'], 'title' => $row['title']],
                 $relatedLinks
             ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n\n"
             . "========================================\n"
@@ -363,14 +364,99 @@ class OpenAiBlogGeneratorService
         $textToAnalyze = Str::lower(trim($text . ' ' . (($topic['title'] ?? '') . ' ' . ($topic['description'] ?? ''))));
 
         $keywordMap = $this->blogConfig('category_keywords', [
-            'technology' => ['ai', 'software', 'app', 'coding', 'automation'],
-            'travel' => ['travel', 'trip', 'places', 'destination', 'guide'],
-            'life-style' => ['lifestyle', 'health', 'habits', 'routine'],
-            'digital-trends' => ['viral', 'social media', 'internet trends'],
-            'productivity' => ['focus', 'work', 'efficiency', 'time management'],
-            'news-updates' => ['news', 'update', 'latest'],
-            'stories-experiences' => ['story', 'journey', 'experience'],
-            'creativity-inspiration' => ['creativity', 'ideas', 'motivation'],
+            'technology' => [
+                'ai',
+                'artificial intelligence',
+                'software',
+                'app',
+                'application',
+                'coding',
+                'programming',
+                'automation',
+                'tech',
+                'development',
+                'tools'
+            ],
+            'travel' => [
+                'travel',
+                'trip',
+                'journey',
+                'tour',
+                'destination',
+                'vacation',
+                'tourism',
+                'flight',
+                'hotel',
+                'guide',
+                'itinerary',
+                'explore'
+            ],
+            'life-style' => [
+                'lifestyle',
+                'life style',
+                'health',
+                'wellness',
+                'habits',
+                'routine',
+                'daily routine',
+                'self care',
+                'fitness',
+                'living'
+            ],
+            'digital-trends' => [
+                'viral',
+                'trend',
+                'trending',
+                'social media',
+                'internet trends',
+                'online trends',
+                'digital trends',
+                'reels',
+                'tiktok',
+                'instagram'
+            ],
+            'productivity' => [
+                'productivity',
+                'focus',
+                'work',
+                'efficiency',
+                'time management',
+                'deep work',
+                'task management',
+                'workflow',
+                'performance'
+            ],
+            'news-updates' => [
+                'news',
+                'update',
+                'latest',
+                'breaking',
+                'headline',
+                'current events',
+                'report',
+                'announcement'
+            ],
+            'stories-experiences' => [
+                'story',
+                'stories',
+                'journey',
+                'experience',
+                'real story',
+                'personal experience',
+                'life story',
+                'case study'
+            ],
+            'creativity-inspiration' => [
+                'creativity',
+                'creative',
+                'ideas',
+                'inspiration',
+                'motivation',
+                'innovative',
+                'thinking',
+                'brainstorm',
+                'imagination'
+            ],
         ]);
 
         foreach ($keywordMap as $slug => $keywords) {
@@ -496,7 +582,32 @@ class OpenAiBlogGeneratorService
             return $title;
         }
 
-        $powerWords = ['best', 'ultimate', 'complete', 'top', 'latest'];
+        $powerWords = [
+            'best',
+            'ultimate',
+            'complete',
+            'top',
+            'latest',
+            'proven',
+            'essential',
+            'smart',
+            'effective',
+            'easy',
+            'simple',
+            'quick',
+            'advanced',
+            'must-know',
+            'insider',
+            'secret',
+            'hidden',
+            'step-by-step',
+            'real',
+            'honest',
+            'updated',
+            'expert',
+            'beginner-friendly',
+            'practical'
+        ];
         $lower = Str::lower($title);
 
         foreach ($powerWords as $powerWord) {
@@ -536,11 +647,11 @@ class OpenAiBlogGeneratorService
         return $query->orderByDesc('created_date')
             ->limit($limit)
             ->get(['title', 'slug'])
-            ->map(fn ($post): array => [
+            ->map(fn($post): array => [
                 'title' => (string) $post->title,
                 'slug' => (string) $post->slug,
             ])
-            ->filter(fn (array $row): bool => $row['title'] !== '' && $row['slug'] !== '')
+            ->filter(fn(array $row): bool => $row['title'] !== '' && $row['slug'] !== '')
             ->values()
             ->all();
     }
@@ -630,7 +741,7 @@ class OpenAiBlogGeneratorService
             ];
         }
 
-        usort($replacements, fn (array $a, array $b): int => $b['offset'] <=> $a['offset']);
+        usort($replacements, fn(array $a, array $b): int => $b['offset'] <=> $a['offset']);
 
         foreach ($replacements as $replacement) {
             $content = substr_replace($content, $replacement['html'], $replacement['offset'], $replacement['length']);
@@ -651,7 +762,7 @@ class OpenAiBlogGeneratorService
 
         $parts = explode(' ', Str::lower($clean));
         $stopWords = ['the', 'a', 'an', 'and', 'of', 'to', 'for', 'in', 'on', 'with', 'how', 'what'];
-        $meaningful = array_values(array_filter($parts, fn (string $word): bool => strlen($word) > 2 && !in_array($word, $stopWords, true)));
+        $meaningful = array_values(array_filter($parts, fn(string $word): bool => strlen($word) > 2 && !in_array($word, $stopWords, true)));
 
         if (!empty($meaningful)) {
             return implode(' ', array_slice($meaningful, 0, 4));
