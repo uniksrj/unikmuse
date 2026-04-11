@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\newpost_details;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -42,23 +43,56 @@ class OpenAiBlogGeneratorService
         }
 
         $allowed = $this->allowedCategorySlugs();
+        $categorySlug = $this->resolveCategorySlug(
+            (string) ($topic['category_slug'] ?? ''),
+            $topic,
+            trim((string) (($topic['title'] ?? '') . ' ' . ($topic['description'] ?? '')))
+        );
+        $tone = $this->toneForCategory($categorySlug);
+        $relatedLinks = $this->relatedPublishedPosts($categorySlug, (string) ($topic['title'] ?? ''), 3);
 
-        $systemPrompt = "You are a professional SEO blog writer. Return only valid JSON. Do not wrap in markdown."
+        $systemPrompt = "You are a professional SEO blog writer with strong editorial judgment. Return only valid JSON. Do not wrap in markdown."
             . " JSON keys required: title, content, meta_description, category_slug."
-            . " content must be original, 800-1200 words, engaging intro and conclusion, and valid HTML using <h2>, <p>, <ul> when useful."
+            . " content must be original, 800-1200 words, high-value, and valid HTML using <h1>, <h2>, <h3>, <p>, <ul>, <ol> when useful."
             . " category_slug must be exactly one from: " . implode(', ', $allowed) . ".";
 
         $userPrompt = [
             'topic_title' => (string) ($topic['title'] ?? ''),
             'topic_description' => (string) ($topic['description'] ?? ''),
+            'topic_source_summary' => (string) ($topic['source_types_csv'] ?? ($topic['source_type'] ?? 'rss')),
+            'topic_source_urls' => $topic['source_urls'] ?? [($topic['source_url'] ?? '')],
             'topic_hint' => (string) ($topic['topic_hint'] ?? 'technology'),
             'source_type' => (string) ($topic['source_type'] ?? 'rss'),
-            'category_slug_hint' => (string) ($topic['category_slug'] ?? ''),
+            'category_slug_hint' => $categorySlug,
+            'tone' => $tone,
+            'content_structure' => [
+                'Engaging introduction',
+                'Why it matters',
+                'Key insights',
+                'Real-world use cases',
+                'Tips or takeaways',
+                'Conclusion',
+            ],
+            'seo_rules' => [
+                'Primary keyword in title, H1 and introduction',
+                'Include 2-3 natural long-tail keyword variations',
+                'Use clear H2 and H3 hierarchy',
+                'Meta description between 150 and 160 characters',
+                'Use title optimization with power words like Best, Ultimate, Complete, Top, Latest',
+            ],
+            'related_internal_links' => array_map(
+                static fn (array $row): array => [
+                    'url' => '/blog/' . $row['slug'],
+                    'title' => $row['title'],
+                ],
+                $relatedLinks
+            ),
             'rules' => [
                 'Do not copy source text. Write original content.',
-                'Use practical headings and readable paragraphs.',
-                'Meta description should be around 140-160 characters.',
-                'category_slug must be the best semantic match from allowed values.',
+                'Use practical headings, readable paragraphs, and helpful examples.',
+                'Blend multi-source insights where relevant.',
+                'Write in human tone and add value beyond source summaries.',
+                'If no category is certain, use news-updates.',
             ],
         ];
 
@@ -118,6 +152,14 @@ class OpenAiBlogGeneratorService
                 return null;
             }
 
+            $generated['title'] = $this->ensurePowerWordTitle($generated['title']);
+            $generated['content'] = $this->injectInternalLinks(
+                $generated['content'],
+                $normalizedCategory,
+                $generated['title'],
+                $relatedLinks
+            );
+
             $logger->info('AI draft generation completed successfully.', [
                 'request_id' => $requestId,
                 'stage' => 'draft_generation',
@@ -157,6 +199,14 @@ class OpenAiBlogGeneratorService
             return null;
         }
 
+        $resolvedCategory = $this->resolveCategorySlug($category, [
+            'title' => $title,
+            'description' => $draftContent,
+            'topic_hint' => $category,
+        ], $title . ' ' . $draftContent);
+        $tone = $this->toneForCategory($resolvedCategory);
+        $relatedLinks = $this->relatedPublishedPosts($resolvedCategory, $title, 3);
+
         $systemPrompt = 'You are an expert SEO content writer and blog strategist.';
 
         $userPrompt = "This is the FINAL publishing step. Transform the draft into a high-quality, human-like, SEO-optimized article that can rank on Google and provide real value.\n\n"
@@ -165,7 +215,8 @@ class OpenAiBlogGeneratorService
             . "========================================\n"
             . "Blog Title: {$title}\n"
             . "Draft Content: {$draftContent}\n"
-            . "Category: {$category}\n\n"
+            . "Category: {$resolvedCategory}\n"
+            . "Tone: {$tone}\n\n"
             . "========================================\n"
             . "OBJECTIVE\n"
             . "========================================\n"
@@ -189,9 +240,19 @@ class OpenAiBlogGeneratorService
             . "========================================\n"
             . "- Naturally include primary keyword from title\n"
             . "- Add related keywords (LSI)\n"
+            . "- Add 2-3 long-tail keyword variations\n"
             . "- Avoid keyword stuffing\n"
             . "- Optimize readability\n"
             . "- Optimize for featured snippets and People Also Ask\n\n"
+            . "========================================\n"
+            . "INTERNAL LINKING\n"
+            . "========================================\n"
+            . "Integrate up to 3 relevant internal links naturally in different sections.\n"
+            . "Use meaningful anchor text and avoid raw URLs.\n"
+            . "Related links JSON: " . json_encode(array_map(
+                static fn (array $row): array => ['url' => '/blog/' . $row['slug'], 'title' => $row['title']],
+                $relatedLinks
+            ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n\n"
             . "========================================\n"
             . "FAQ SECTION (MANDATORY)\n"
             . "========================================\n"
@@ -270,6 +331,14 @@ class OpenAiBlogGeneratorService
             $optimized['meta_description'] = trim(Str::limit($optimized['meta_description'], 160, ''));
         }
 
+        $optimized['title'] = $this->ensurePowerWordTitle($optimized['title']);
+        $optimized['content'] = $this->injectInternalLinks(
+            $optimized['content'],
+            $resolvedCategory,
+            $optimized['title'],
+            $relatedLinks
+        );
+
         $logger->info('AI publish optimization completed successfully.', [
             'request_id' => $requestId,
             'stage' => 'publish_optimization',
@@ -293,16 +362,16 @@ class OpenAiBlogGeneratorService
 
         $textToAnalyze = Str::lower(trim($text . ' ' . (($topic['title'] ?? '') . ' ' . ($topic['description'] ?? ''))));
 
-        $keywordMap = [
-            'travel' => ['travel', 'trip', 'tour', 'destination', 'vacation', 'hotel', 'flight', 'itinerary', 'backpacking'],
-            'digital-trends' => ['gadget', 'wearable', 'smartphone', 'trend', 'future tech', 'social media', 'viral', 'digital trend'],
-            'productivity' => ['productivity', 'habit', 'focus', 'time management', 'workflow', 'deep work', 'efficiency'],
-            'news-updates' => ['breaking', 'latest', 'news', 'update', 'announced', 'report', 'headline'],
-            'stories-experiences' => ['story', 'experience', 'journey', 'lessons learned', 'personal'],
-            'creativity-inspiration' => ['creative', 'inspiration', 'art', 'motivation', 'idea'],
-            'life-style' => ['lifestyle', 'wellness', 'health', 'daily life', 'routine', 'mindfulness'],
-            'technology' => ['ai', 'technology', 'programming', 'software', 'developer', 'machine learning', 'cloud', 'cybersecurity'],
-        ];
+        $keywordMap = $this->blogConfig('category_keywords', [
+            'technology' => ['ai', 'software', 'app', 'coding', 'automation'],
+            'travel' => ['travel', 'trip', 'places', 'destination', 'guide'],
+            'life-style' => ['lifestyle', 'health', 'habits', 'routine'],
+            'digital-trends' => ['viral', 'social media', 'internet trends'],
+            'productivity' => ['focus', 'work', 'efficiency', 'time management'],
+            'news-updates' => ['news', 'update', 'latest'],
+            'stories-experiences' => ['story', 'journey', 'experience'],
+            'creativity-inspiration' => ['creativity', 'ideas', 'motivation'],
+        ]);
 
         foreach ($keywordMap as $slug => $keywords) {
             foreach ($keywords as $keyword) {
@@ -413,6 +482,182 @@ class OpenAiBlogGeneratorService
             ]));
             return null;
         }
+    }
+
+    private function toneForCategory(string $categorySlug): string
+    {
+        return (string) $this->blogConfig("category_tones.{$categorySlug}", 'neutral, factual');
+    }
+
+    private function ensurePowerWordTitle(string $title): string
+    {
+        $title = trim($title);
+        if ($title === '') {
+            return $title;
+        }
+
+        $powerWords = ['best', 'ultimate', 'complete', 'top', 'latest'];
+        $lower = Str::lower($title);
+
+        foreach ($powerWords as $powerWord) {
+            if (Str::contains($lower, $powerWord)) {
+                return $title;
+            }
+        }
+
+        if (Str::length($title) < 55) {
+            return 'Complete ' . $title;
+        }
+
+        return $title;
+    }
+
+    /**
+     * @return array<int, array{title:string,slug:string}>
+     */
+    private function relatedPublishedPosts(string $categorySlug, string $excludeTitle, int $limit = 3): array
+    {
+        $limit = max(0, min(3, $limit));
+        if ($limit === 0) {
+            return [];
+        }
+
+        $query = newpost_details::query()
+            ->published()
+            ->where('category', $categorySlug)
+            ->whereNotNull('slug')
+            ->where('slug', '<>', '');
+
+        $excludeTitle = trim($excludeTitle);
+        if ($excludeTitle !== '') {
+            $query->whereRaw('LOWER(title) <> ?', [Str::lower($excludeTitle)]);
+        }
+
+        return $query->orderByDesc('created_date')
+            ->limit($limit)
+            ->get(['title', 'slug'])
+            ->map(fn ($post): array => [
+                'title' => (string) $post->title,
+                'slug' => (string) $post->slug,
+            ])
+            ->filter(fn (array $row): bool => $row['title'] !== '' && $row['slug'] !== '')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param array<int, array{title:string,slug:string}> $relatedLinks
+     */
+    private function injectInternalLinks(string $content, string $categorySlug, string $title, array $relatedLinks = []): string
+    {
+        if (trim($content) === '') {
+            return $content;
+        }
+
+        if (empty($relatedLinks)) {
+            $relatedLinks = $this->relatedPublishedPosts($categorySlug, $title, 3);
+        }
+
+        if (empty($relatedLinks)) {
+            return $content;
+        }
+
+        $uniqueLinks = [];
+        foreach ($relatedLinks as $row) {
+            $slug = trim((string) ($row['slug'] ?? ''));
+            $linkTitle = trim((string) ($row['title'] ?? ''));
+            if ($slug === '' || $linkTitle === '') {
+                continue;
+            }
+
+            $href = '/blog/' . $slug;
+            if (Str::contains($content, $href) || Str::contains($content, '/posts/' . $slug)) {
+                continue;
+            }
+
+            $uniqueLinks[$slug] = [
+                'title' => $linkTitle,
+                'slug' => $slug,
+                'href' => $href,
+            ];
+
+            if (count($uniqueLinks) >= 3) {
+                break;
+            }
+        }
+
+        if (empty($uniqueLinks)) {
+            return $content;
+        }
+
+        if (!preg_match_all('/<p\b[^>]*>.*?<\/p>/is', $content, $matches, PREG_OFFSET_CAPTURE)) {
+            return $content;
+        }
+
+        $paragraphs = $matches[0];
+        $paragraphCount = count($paragraphs);
+        if ($paragraphCount === 0) {
+            return $content;
+        }
+
+        $targetIndexes = [];
+        foreach ([0.30, 0.60, 0.85] as $ratio) {
+            $targetIndexes[] = min($paragraphCount - 1, max(0, (int) floor(($paragraphCount - 1) * $ratio)));
+        }
+        $targetIndexes = array_values(array_unique($targetIndexes));
+
+        $replacements = [];
+        $linkRows = array_values($uniqueLinks);
+        $insertionCount = min(count($targetIndexes), count($linkRows));
+
+        for ($i = 0; $i < $insertionCount; $i++) {
+            $index = $targetIndexes[$i];
+            $paragraphHtml = (string) $paragraphs[$index][0];
+            $offset = (int) $paragraphs[$index][1];
+            $link = $linkRows[$i];
+
+            $anchor = $this->anchorTextFromTitle($link['title']);
+            $sentence = ' For deeper context, see <a href="' . e($link['href']) . '">' . e($anchor) . '</a>.';
+            $updatedParagraph = preg_replace('/<\/p>\s*$/i', $sentence . '</p>', $paragraphHtml, 1, $replaced);
+            if (!$replaced) {
+                $updatedParagraph = $paragraphHtml . $sentence;
+            }
+
+            $replacements[] = [
+                'offset' => $offset,
+                'length' => strlen($paragraphHtml),
+                'html' => $updatedParagraph,
+            ];
+        }
+
+        usort($replacements, fn (array $a, array $b): int => $b['offset'] <=> $a['offset']);
+
+        foreach ($replacements as $replacement) {
+            $content = substr_replace($content, $replacement['html'], $replacement['offset'], $replacement['length']);
+        }
+
+        return $content;
+    }
+
+    private function anchorTextFromTitle(string $title): string
+    {
+        $clean = trim((string) Str::of($title)
+            ->replaceMatches('/[^\pL\pN\s-]/u', ' ')
+            ->squish());
+
+        if ($clean === '') {
+            return 'related insights';
+        }
+
+        $parts = explode(' ', Str::lower($clean));
+        $stopWords = ['the', 'a', 'an', 'and', 'of', 'to', 'for', 'in', 'on', 'with', 'how', 'what'];
+        $meaningful = array_values(array_filter($parts, fn (string $word): bool => strlen($word) > 2 && !in_array($word, $stopWords, true)));
+
+        if (!empty($meaningful)) {
+            return implode(' ', array_slice($meaningful, 0, 4));
+        }
+
+        return Str::lower(Str::limit($clean, 45, ''));
     }
 
     private function ensureFaqSection(string $content, string $title): string

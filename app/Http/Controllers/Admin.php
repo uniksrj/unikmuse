@@ -119,6 +119,7 @@ class Admin extends Controller
             $updateData['word_count'] = str_word_count(strip_tags($optimized['content']));
             $updateData['reading_time'] = (string) max(1, (int) ceil(((int) $updateData['word_count']) / 200));
             $updateData['table_of_contents'] = $this->generateTOC($optimized['content']);
+            $updateData['name'] = 'Suraj';
         }
 
         $post->update($updateData);
@@ -330,6 +331,7 @@ class Admin extends Controller
                 'reading_time' => (string) $readingTime,
                 'word_count' => $wordCount,
                 'is_featured' => $validated['featured'] ?? 0,
+                'name' => 'Suraj',
                 'updated_at' => now(),
             ];
 

@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/blog', [Blogmain::class, 'index'])->name('blog.index');
+Route::get('/blog/{slugOrId}', [Blogmain::class, 'show'])->name('blog.show');
 Route::get('/posts/{slugOrId}', [Blogmain::class, 'show'])->name('post.show');
 Route::post('/posts/{id}/comment', [Blogmain::class, 'storeComment'])->name('post.comment');
 Route::get('/sitemap.xml', [Blogmain::class, 'sitemap'])->name('sitemap');

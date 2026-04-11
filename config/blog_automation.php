@@ -9,6 +9,10 @@ return [
     'schedule_time' => (string) env('AI_BLOG_SCHEDULE_TIME', '06:00'),
     'log_channel' => (string) env('AI_BLOG_LOG_CHANNEL', 'ai_blog'),
     'log_response_body_limit' => (int) env('AI_BLOG_LOG_RESPONSE_BODY_LIMIT', 1200),
+    'cache_ttl_minutes' => (int) env('AI_BLOG_CACHE_TTL_MINUTES', 20),
+    'max_dynamic_categories' => (int) env('AI_BLOG_MAX_DYNAMIC_CATEGORIES', 4),
+    'max_candidates_multiplier' => (int) env('AI_BLOG_MAX_CANDIDATES_MULTIPLIER', 5),
+    'high_engagement_threshold' => (int) env('AI_BLOG_HIGH_ENGAGEMENT_THRESHOLD', 100),
 
     'allowed_keywords' => array_values(array_filter(array_map(
         static fn (string $keyword): string => strtolower(trim($keyword)),
@@ -27,6 +31,42 @@ return [
     ))),
     'scoring_bonus_points' => (int) env('AI_BLOG_SCORE_BONUS_KEYWORDS', 2),
     'scoring_long_description_points' => (int) env('AI_BLOG_SCORE_LONG_DESCRIPTION', 1),
+    'scoring_category_keyword_points' => (int) env('AI_BLOG_SCORE_CATEGORY_KEYWORDS', 2),
+    'scoring_multi_source_points' => (int) env('AI_BLOG_SCORE_MULTI_SOURCE', 3),
+    'scoring_high_engagement_points' => (int) env('AI_BLOG_SCORE_HIGH_ENGAGEMENT', 1),
+
+    'category_keywords' => [
+        'technology' => ['ai', 'software', 'app', 'coding', 'automation'],
+        'travel' => ['travel', 'trip', 'places', 'destination', 'guide'],
+        'life-style' => ['lifestyle', 'health', 'habits', 'routine'],
+        'digital-trends' => ['viral', 'social media', 'internet trends'],
+        'productivity' => ['focus', 'work', 'efficiency', 'time management'],
+        'news-updates' => ['news', 'update', 'latest'],
+        'stories-experiences' => ['story', 'journey', 'experience'],
+        'creativity-inspiration' => ['creativity', 'ideas', 'motivation'],
+    ],
+
+    'category_tones' => [
+        'technology' => 'expert, analytical',
+        'travel' => 'descriptive, engaging',
+        'life-style' => 'conversational, relatable',
+        'digital-trends' => 'expert, analytical',
+        'productivity' => 'actionable, structured',
+        'news-updates' => 'neutral, factual',
+        'stories-experiences' => 'storytelling, emotional',
+        'creativity-inspiration' => 'motivational',
+    ],
+
+    'category_source_map' => [
+        'technology' => ['rss', 'reddit', 'hackernews', 'github', 'devto', 'newsapi'],
+        'digital-trends' => ['rss', 'reddit', 'hackernews', 'github', 'devto', 'newsapi'],
+        'travel' => ['rss', 'reddit', 'newsapi'],
+        'life-style' => ['rss', 'reddit', 'medium', 'newsapi'],
+        'productivity' => ['rss', 'reddit', 'devto', 'medium', 'stackoverflow'],
+        'news-updates' => ['rss', 'trends', 'newsapi', 'gdelt'],
+        'stories-experiences' => ['rss', 'reddit', 'medium'],
+        'creativity-inspiration' => ['rss', 'reddit', 'medium', 'devto'],
+    ],
 
     'trends' => [
         'enabled' => env('AI_BLOG_TRENDS_ENABLED', true),
@@ -50,6 +90,62 @@ return [
             'travel' => 'travel',
             'productivity' => 'productivity',
         ],
+    ],
+
+    'hackernews' => [
+        'enabled' => env('AI_BLOG_HN_ENABLED', true),
+        'top_stories_url' => (string) env('AI_BLOG_HN_TOP_URL', 'https://hacker-news.firebaseio.com/v0/topstories.json'),
+        'item_url_pattern' => (string) env('AI_BLOG_HN_ITEM_URL_PATTERN', 'https://hacker-news.firebaseio.com/v0/item/{id}.json'),
+        'limit' => (int) env('AI_BLOG_HN_LIMIT', 10),
+    ],
+
+    'github' => [
+        'enabled' => env('AI_BLOG_GITHUB_ENABLED', true),
+        'search_url' => (string) env('AI_BLOG_GITHUB_SEARCH_URL', 'https://api.github.com/search/repositories'),
+        'query' => (string) env('AI_BLOG_GITHUB_QUERY', 'stars:>1000'),
+        'sort' => (string) env('AI_BLOG_GITHUB_SORT', 'stars'),
+        'order' => (string) env('AI_BLOG_GITHUB_ORDER', 'desc'),
+        'per_page' => (int) env('AI_BLOG_GITHUB_PER_PAGE', 10),
+    ],
+
+    'devto' => [
+        'enabled' => env('AI_BLOG_DEVTO_ENABLED', true),
+        'url' => (string) env('AI_BLOG_DEVTO_URL', 'https://dev.to/api/articles'),
+        'per_page' => (int) env('AI_BLOG_DEVTO_PER_PAGE', 10),
+    ],
+
+    'medium' => [
+        'enabled' => env('AI_BLOG_MEDIUM_ENABLED', true),
+        'tag_feed_pattern' => (string) env('AI_BLOG_MEDIUM_TAG_FEED_PATTERN', 'https://medium.com/feed/tag/{tag}'),
+        'tags' => array_values(array_filter(array_map(
+            static fn (string $tag): string => strtolower(trim($tag)),
+            explode(',', (string) env('AI_BLOG_MEDIUM_TAGS', 'technology,travel,lifestyle,productivity,creativity'))
+        ))),
+    ],
+
+    'newsapi' => [
+        'enabled' => env('AI_BLOG_NEWSAPI_ENABLED', false),
+        'key' => (string) env('NEWSAPI_KEY', ''),
+        'url' => (string) env('AI_BLOG_NEWSAPI_URL', 'https://newsapi.org/v2/top-headlines'),
+        'language' => (string) env('AI_BLOG_NEWSAPI_LANGUAGE', 'en'),
+        'country' => (string) env('AI_BLOG_NEWSAPI_COUNTRY', 'us'),
+        'page_size' => (int) env('AI_BLOG_NEWSAPI_PAGE_SIZE', 10),
+    ],
+
+    'stackoverflow' => [
+        'enabled' => env('AI_BLOG_STACKOVERFLOW_ENABLED', true),
+        'url' => (string) env('AI_BLOG_STACKOVERFLOW_URL', 'https://api.stackexchange.com/2.3/questions'),
+        'site' => (string) env('AI_BLOG_STACKOVERFLOW_SITE', 'stackoverflow'),
+        'pagesize' => (int) env('AI_BLOG_STACKOVERFLOW_PAGESIZE', 10),
+    ],
+
+    'gdelt' => [
+        'enabled' => env('AI_BLOG_GDELT_ENABLED', true),
+        'url' => (string) env('AI_BLOG_GDELT_URL', 'https://api.gdeltproject.org/api/v2/doc/doc'),
+        'query' => (string) env('AI_BLOG_GDELT_QUERY', 'technology OR travel OR productivity'),
+        'mode' => (string) env('AI_BLOG_GDELT_MODE', 'artlist'),
+        'format' => (string) env('AI_BLOG_GDELT_FORMAT', 'json'),
+        'maxrecords' => (int) env('AI_BLOG_GDELT_MAXRECORDS', 10),
     ],
 
     'feeds' => [

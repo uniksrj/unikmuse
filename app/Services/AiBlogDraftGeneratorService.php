@@ -130,6 +130,11 @@ class AiBlogDraftGeneratorService
 
         $toc = $this->extractTableOfContents($content);
         $wordCount = str_word_count(strip_tags($content));
+        $sourceUrl = trim((string) ($topic['source_url'] ?? ''));
+        if ($sourceUrl === '' && is_array($topic['source_urls'] ?? null)) {
+            $sourceUrl = trim((string) (($topic['source_urls'][0] ?? '')));
+        }
+        $sourceType = trim((string) ($topic['source_type'] ?? 'rss'));
 
         $data = [
             'name' => 'AI Editorial Assistant',
@@ -139,7 +144,7 @@ class AiBlogDraftGeneratorService
             'meta_description' => $metaDescription,
             'description' => $content,
             'category' => $categorySlug,
-            'source_url' => trim((string) ($topic['source_url'] ?? '')) ?: null,
+            'source_url' => $sourceUrl !== '' ? $sourceUrl : null,
             'status' => 'draft',
             'is_published' => 0,
             'is_featured' => 0,
@@ -148,12 +153,12 @@ class AiBlogDraftGeneratorService
             'table_of_contents' => empty($toc) ? null : $toc,
             'reading_time' => (string) max(1, (int) ceil($wordCount / 200)),
             'word_count' => $wordCount,
-            'tags' => json_encode([$categorySlug, 'ai-generated']),
+            'tags' => json_encode(array_values(array_unique([$categorySlug, 'ai-generated', $sourceType]))),
             'created_date' => now(),
         ];
 
         if (Schema::hasColumn('newpost_details', 'source_type')) {
-            $data['source_type'] = trim((string) ($topic['source_type'] ?? 'rss'));
+            $data['source_type'] = $sourceType !== '' ? $sourceType : 'rss';
         }
 
         return newpost_details::create($data);
