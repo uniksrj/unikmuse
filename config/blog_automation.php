@@ -213,37 +213,37 @@ return [
         [
             'topic' => 'productivity',
             'category' => 'productivity',
-            'url' => 'https://news.google.com/rss/search?q=productivity&hl=en-US&gl=US&ceid=US:en',
+            'url' => 'https://news.google.com/rss/search?q=productivity&hl=en-IN&gl=IN&ceid=IN:en',
         ],
 
         [
             'topic' => 'lifestyle',
             'category' => 'life-style',
-            'url' => 'https://news.google.com/rss/search?q=lifestyle&hl=en-US&gl=US&ceid=US:en',
+            'url' => 'https://news.google.com/rss/search?q=lifestyle&hl=en-IN&gl=IN&ceid=IN:en',
         ],
 
         [
             'topic' => 'digital trends',
             'category' => 'digital-trends',
-            'url' => 'https://news.google.com/rss/search?q=digital+trends&hl=en-US&gl=US&ceid=US:en',
+            'url' => 'https://news.google.com/rss/search?q=digital+trends&hl=en-IN&gl=IN&ceid=IN:en',
         ],
 
         [
             'topic' => 'news',
             'category' => 'news-updates',
-            'url' => 'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en',
+            'url' => 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en',
         ],
 
         [
             'topic' => 'inspiration',
             'category' => 'creativity-inspiration',
-            'url' => 'https://news.google.com/rss/search?q=inspiration&hl=en-US&gl=US&ceid=US:en',
+            'url' => 'https://news.google.com/rss/search?q=inspiration&hl=en-IN&gl=IN&ceid=IN:en',
         ],
 
         [
             'topic' => 'stories',
             'category' => 'stories-experiences',
-            'url' => 'https://news.google.com/rss/search?q=life+stories&hl=en-US&gl=US&ceid=US:en',
+            'url' => 'https://news.google.com/rss/search?q=life+stories&hl=en-IN&gl=IN&ceid=IN:en',
         ],
     ],
 

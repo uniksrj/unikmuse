@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\TextHelper;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -1018,8 +1019,18 @@ class RssTopicFetcherService
             $description = trim((string) ($topic['description'] ?? ''));
             $sourceUrl = trim((string) ($topic['source_url'] ?? ''));
             $sourceUrlKey = $this->normalizeSourceUrl($sourceUrl);
+            $engagementScore = (int) ($topic['engagement_score'] ?? 0);
+            $sourceType = strtolower(trim((string) ($topic['source_type'] ?? 'rss')));
+            $sourceTypes = is_array($topic['source_types'] ?? null)
+                ? array_map(static fn ($type) => strtolower(trim((string) $type)), $topic['source_types'])
+                : [];
+            $isFromTrends = $sourceType === 'trends' || in_array('trends', $sourceTypes, true);
 
             if ($title === '' || mb_strlen($description) < $minDescriptionLength) {
+                continue;
+            }
+
+            if ($engagementScore < 50 && !$isFromTrends) {
                 continue;
             }
 
@@ -1052,7 +1063,13 @@ class RssTopicFetcherService
             );
 
             $topic['category_slug'] = $categorySlug;
-            $topic['score'] = $this->calculateScore($topic);
+            $scoreData = $this->calculateScore($topic);
+            if (is_array($scoreData)) {
+                $topic['score'] = (int) ($scoreData['score'] ?? 0);
+                $topic['score_breakdown'] = $scoreData['score_breakdown'] ?? [];
+            } else {
+                $topic['score'] = (int) $scoreData;
+            }
             $filtered[] = $topic;
         }
 
@@ -1127,49 +1144,18 @@ class RssTopicFetcherService
     /**
      * @param array<string, mixed> $topic
      */
-    private function calculateScore(array $topic): int
+    /**
+     * @return array{score:int, score_breakdown: array<string, int>}|int
+     */
+    private function calculateScore(array $topic): array|int
     {
-        $sourceType = strtolower(trim((string) ($topic['source_type'] ?? 'rss')));
-        $scoreWeights = $this->blogConfig('score_weights', []);
-        $score = is_array($scoreWeights) ? (int) ($scoreWeights[$sourceType] ?? 0) : 0;
+        $breakdown = [];
+        $score = TextHelper::calculateScore($topic, $breakdown);
 
-        $text = Str::lower(trim((string) ($topic['title'] ?? '') . ' ' . (string) ($topic['description'] ?? '')));
-        $bonusKeywords = $this->blogConfig('scoring_bonus_keywords', ['ai', '2026']);
-        $bonusPoints = (int) $this->blogConfig('scoring_bonus_points', 2);
-
-        if (is_array($bonusKeywords)) {
-            foreach ($bonusKeywords as $keyword) {
-                $keyword = strtolower(trim((string) $keyword));
-                if ($keyword === '') {
-                    continue;
-                }
-
-                if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/i', $text) === 1) {
-                    $score += $bonusPoints;
-                    break;
-                }
-            }
-        }
-
-        $longDescriptionLength = max(1, (int) $this->blogConfig('long_description_length', 220));
-        if (mb_strlen((string) ($topic['description'] ?? '')) >= $longDescriptionLength) {
-            $score += (int) $this->blogConfig('scoring_long_description_points', 1);
-        }
-
-        $category = (string) ($topic['category_slug'] ?? $this->fallbackCategorySlug());
-        if ($this->categoryKeywordMatchCount($category, $text) > 0) {
-            $score += (int) $this->blogConfig('scoring_category_keyword_points', 2);
-        }
-
-        if ((int) ($topic['source_count'] ?? 1) > 1) {
-            $score += (int) $this->blogConfig('scoring_multi_source_points', 3);
-        }
-
-        if ((int) ($topic['engagement_score'] ?? 0) >= (int) $this->blogConfig('high_engagement_threshold', 100)) {
-            $score += (int) $this->blogConfig('scoring_high_engagement_points', 1);
-        }
-
-        return $score;
+        return [
+            'score' => $score,
+            'score_breakdown' => $breakdown,
+        ];
     }
 
     private function resolveCategorySlug(string $candidate, string $text = '', string $sourceType = 'rss'): string

@@ -12,8 +12,7 @@ class AiBlogDraftGeneratorService
     public function __construct(
         private readonly RssTopicFetcherService $rssTopicFetcher,
         private readonly OpenAiBlogGeneratorService $openAiGenerator,
-    ) {}
-
+    ) {}    
     /**
      * @return array<string, int>
      */
@@ -21,7 +20,34 @@ class AiBlogDraftGeneratorService
     {
         $limit = max(1, (int) ($limit ?? $this->blogConfig('default_limit', 5)));
 
-        $topics = $this->rssTopicFetcher->fetchTrendingTopics($limit);
+        $topics = $this->rssTopicFetcher->fetchTrendingTopics($limit);        
+        $categoryBuckets = [];
+        $allowedCategories = $this->openAiGenerator->allowedCategorySlugs();
+
+        foreach ($topics as $topic) {
+            $category = $this->openAiGenerator->resolveCategorySlug(
+                '',
+                $topic,
+                ($topic['title'] ?? '') . ' ' . ($topic['description'] ?? '')
+            );
+
+            $categoryBuckets[$category][] = $topic;
+        }
+        
+        $balancedTopics = [];
+        $maxPerCategory = max(1, floor($limit / max(1, count($allowedCategories))));
+
+        foreach ($categoryBuckets as $category => $items) {
+            $items = array_slice($items, 0, $maxPerCategory);
+            foreach ($items as $item) {
+                $balancedTopics[] = $item;
+            }
+        }
+        
+        if (count($balancedTopics) < $limit) {
+            $remaining = array_slice($topics, 0, $limit - count($balancedTopics));
+            $balancedTopics = array_merge($balancedTopics, $remaining);
+        }
 
         $result = [
             'fetched' => count($topics),
@@ -30,7 +56,7 @@ class AiBlogDraftGeneratorService
             'failed' => 0,
         ];
 
-        foreach ($topics as $topic) {
+        foreach ($balancedTopics as $topic) {
             try {
                 if ($this->isDuplicate((string) ($topic['title'] ?? ''), (string) ($topic['source_url'] ?? ''))) {
                     $result['duplicates']++;
